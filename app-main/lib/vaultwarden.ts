@@ -1,4 +1,4 @@
-// Handles token + unlock, nothing else.
+// lib/vaultwarden.ts
 import axios from 'axios';
 
 export async function getToken(apiUrl: string, id: string, secret: string) {
@@ -7,12 +7,9 @@ export async function getToken(apiUrl: string, id: string, secret: string) {
     client_secret: secret,
     grant_type: 'client_credentials',
     scope: 'api',
-  });
-  return axios.post(`${apiUrl}/identity/connect/token`, body);
-}
+  }).toString();                                // <- stringify
 
-export async function syncVault(apiUrl: string, bearer: string) {
-  return axios.get(`${apiUrl}/api/sync`, {
-    headers: { Authorization: `Bearer ${bearer}` },
+  return axios.post(`${apiUrl}/identity/connect/token`, body, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, // <- force header
   });
 }

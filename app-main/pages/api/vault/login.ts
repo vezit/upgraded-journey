@@ -7,7 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { data } = await getToken(url, clientId, clientSecret);
     res.status(200).json(data);          // {access_token, refresh_token, Key, ...}
-  } catch (e: any) {
-    res.status(400).json({ error: e.message });
+  } catch (err: any) {
+    const status = err.response?.status ?? 500;
+  res
+    .status(status)
+    .json(err.response?.data ?? { error: err.message });
   }
 }

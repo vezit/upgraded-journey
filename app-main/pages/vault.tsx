@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export default function Vault() {
-  const [url, setUrl] = useState('https://vault.example.com');       // default server
+  const [url, setUrl] = useState('https://vault.vezit.net');       // default server
   const [id, setId] = useState('');      // client_id
   const [secret, setSecret] = useState('');  // client_secret
   const [master, setMaster] = useState('');  // master password

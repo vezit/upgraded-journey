@@ -1,7 +1,7 @@
 {
-    "name": "Dev container: victorreipur",
+    "name": "Dev container: upgraded-journey",
     "dockerComposeFile": "docker-compose.yaml",
-    "service": "victorreipur-app-main",
+    "service": "upgraded-journey-app-main",
     "workspaceFolder": "/usr/src/project",
     "remoteUser": "node",
     "customizations": {

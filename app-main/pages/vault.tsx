@@ -7,6 +7,23 @@ export default function Vault() {
   const [master, setMaster] = useState('');  // master password
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
+  const [vaultData, setVaultData] = useState<any>(null);
+
+  async function fetchVaultData(tok: string) {
+    setStatus('Syncing vault…');
+    const data = await fetch('/api/vault/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiUrl: url, token: tok }),
+    }).then(r => r.json());
+
+    if (!data.error) {
+      setVaultData(data);
+      setStatus('Vault synced');
+    } else {
+      setStatus('Sync failed');
+    }
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -19,8 +36,9 @@ export default function Vault() {
 
     if (r.access_token) {
       setToken(r.access_token);                   // store in memory; persist as needed
-      setStatus('Token OK – now unlock vault locally');
-      // TODO: derive KDF & decrypt r.Key with `master`, then call /api/vault/sync
+      setStatus('Token OK');
+      // TODO: derive KDF & decrypt r.Key with `master` to fully unlock
+      await fetchVaultData(r.access_token);
     } else setStatus('Login failed');
   }
 
@@ -35,6 +53,11 @@ export default function Vault() {
         <button className="bg-primary text-white px-4 py-2 rounded" type="submit">Login &amp; Sync</button>
       </form>
       <p className="mt-4 text-sm">{status}</p>
+      {vaultData && (
+        <pre className="mt-4 text-xs whitespace-pre-wrap break-all">
+          {JSON.stringify(vaultData, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }

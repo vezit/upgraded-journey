@@ -44,7 +44,7 @@
       "type": "pwa-chrome",
       "request": "launch",
       "runtimeExecutable": "/usr/bin/google-chrome",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000/vault",
       "webRoot": "${workspaceFolder}/app-main",
       "disableNetworkCache": true
     }

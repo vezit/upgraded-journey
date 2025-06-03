@@ -1,62 +1,103 @@
+// app-main/pages/vault.tsx – uses values from .env.local so there are **no input fields**
+// -----------------------------------------------------------------------------
+// Expected entries in `.env.local` (note the NEXT_PUBLIC_ prefix so the browser
+// can read them):
+// NEXT_PUBLIC_VAULT_URL=https://vault.vezit.net
+// NEXT_PUBLIC_CLIENT_ID=myClientId
+// NEXT_PUBLIC_CLIENT_SECRET=myClientSecret
+// # optional – only needed when you later decrypt the vault
+// NEXT_PUBLIC_MASTER_PASSWORD=myMasterPassword
+// -----------------------------------------------------------------------------
+
 import { useState } from 'react';
 
+/** Grab secrets from the env (Next.js exposes only *NEXT_PUBLIC_* on the client) */
+const API_URL        = process.env.NEXT_PUBLIC_VAULT_URL     ?? '';
+const CLIENT_ID      = process.env.NEXT_PUBLIC_CLIENT_ID     ?? '';
+const CLIENT_SECRET  = process.env.NEXT_PUBLIC_CLIENT_SECRET ?? '';
+const MASTER_PASSWORD = process.env.NEXT_PUBLIC_MASTER_PASSWORD ?? '';
+
+if (!API_URL || !CLIENT_ID || !CLIENT_SECRET) {
+  // eslint-disable-next-line no-console
+  console.warn('[Vault] Missing env variables – check your .env.local');
+}
+
 export default function Vault() {
-  const [url, setUrl] = useState('https://vault.vezit.net');       // default server
-  const [id, setId] = useState('');      // client_id
-  const [secret, setSecret] = useState('');  // client_secret
-  const [master, setMaster] = useState('');  // master password
-  const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
   const [vaultData, setVaultData] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
-  async function fetchVaultData(tok: string) {
+  /** POST to /api/vault/sync and populate the view */
+  async function fetchVaultData(token: string) {
     setStatus('Syncing vault…');
-    const data = await fetch('/api/vault/sync', {
+    const res = await fetch('/api/vault/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiUrl: url, token: tok }),
+      body: JSON.stringify({ apiUrl: API_URL, token }),
     }).then(r => r.json());
 
-    if (!data.error) {
-      setVaultData(data);
+    if (!res.error) {
+      setVaultData(res);
       setStatus('Vault synced');
     } else {
       setStatus('Sync failed');
+      setErrorMsg(res.error);
     }
   }
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
+  /** Get OAuth token using the client-credential flow */
+  async function handleLogin() {
     setStatus('Getting token…');
-    const r = await fetch('/api/vault/login', {
+    setErrorMsg('');
+
+    const res = await fetch('/api/vault/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, clientId: id, clientSecret: secret }),
+      body: JSON.stringify({
+        url: API_URL,
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+      }),
     }).then(r => r.json());
 
-    if (r.access_token) {
-      setToken(r.access_token);                   // store in memory; persist as needed
-      setStatus('Token OK');
-      // TODO: derive KDF & decrypt r.Key with `master` to fully unlock
-      await fetchVaultData(r.access_token);
-    } else setStatus('Login failed');
+    if (res.access_token) {
+      setStatus('Token OK – syncing…');
+      await fetchVaultData(res.access_token);
+    } else {
+      setStatus('Login failed');
+      setErrorMsg(res.error ?? 'Unknown error – check the server logs');
+    }
   }
 
   return (
     <div className="max-w-md mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">Vault Login</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
-        <input className="w-full p-2 border" value={url}     onChange={e=>setUrl(e.target.value)}     placeholder="Vaultwarden URL" />
-        <input className="w-full p-2 border" value={id}      onChange={e=>setId(e.target.value)}      placeholder="client_id" />
-        <input className="w-full p-2 border" value={secret}  onChange={e=>setSecret(e.target.value)}  placeholder="client_secret" />
-        <input className="w-full p-2 border" type="password" value={master} onChange={e=>setMaster(e.target.value)} placeholder="master password" />
-        <button className="bg-primary text-white px-4 py-2 rounded" type="submit">Login &amp; Sync</button>
-      </form>
-      <p className="mt-4 text-sm">{status}</p>
+      <h1 className="text-2xl font-bold mb-6">Vault Sync</h1>
+
+      <button
+        onClick={handleLogin}
+        className="bg-primary hover:bg-primary/80 transition text-white px-4 py-2 rounded w-full"
+      >
+        Login &amp; Sync (env)
+      </button>
+
+      <p className="mt-4 text-sm text-secondary">{status}</p>
+      {errorMsg && (
+        <pre className="mt-2 p-2 bg-red-100 text-red-600 text-xs whitespace-pre-wrap break-all rounded">
+          {errorMsg}
+        </pre>
+      )}
+
       {vaultData && (
-        <pre className="mt-4 text-xs whitespace-pre-wrap break-all">
+        <pre className="mt-6 text-xs whitespace-pre-wrap break-all bg-gray-100 p-4 rounded max-h-[60vh] overflow-auto">
           {JSON.stringify(vaultData, null, 2)}
         </pre>
+      )}
+
+      {MASTER_PASSWORD === '' && (
+        <p className="mt-4 text-xs text-yellow-600">
+          ⚠️ <code>NEXT_PUBLIC_MASTER_PASSWORD</code> not set – you will only see the
+          encrypted blob.
+        </p>
       )}
     </div>
   );

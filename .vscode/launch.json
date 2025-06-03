@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js: Full Stack",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:debug"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/app-main",
+      "outFiles": ["${workspaceFolder}/app-main/.next/**/*.js"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/app-main/.next/**/*.js",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Attach to Next.js Router Server (9230)",
+      "type": "node",
+      "request": "attach",
+      "port": 9230,
+      "address": "127.0.0.1",
+      "localRoot": "${workspaceFolder}/app-main",
+      "remoteRoot": "/usr/src/project/app-main",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Attach to Next.js Launcher (9229)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "127.0.0.1",
+      "localRoot": "${workspaceFolder}/app-main",
+      "remoteRoot": "/usr/src/project/app-main",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Browser: chromium",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "runtimeExecutable": "/usr/bin/google-chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/app-main",
+      "disableNetworkCache": true
+    }
+
+  ],
+  "compounds": [
+    {
+      "name": "Start All",
+      "configurations": [
+        "Next.js: Full Stack",
+        "Attach to Next.js Router Server (9230)",
+        "Browser: chromium"
+      ]
+    }
+  ]
+}

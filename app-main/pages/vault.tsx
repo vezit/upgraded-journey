@@ -3,8 +3,8 @@
 // Expected entries in `.env.local` (note the NEXT_PUBLIC_ prefix so the browser
 // can read them):
 // NEXT_PUBLIC_VAULT_URL=https://vault.vezit.net
-// NEXT_PUBLIC_CLIENT_ID=myClientId
-// NEXT_PUBLIC_CLIENT_SECRET=myClientSecret
+// NEXT_PUBLIC_CLIENT_ID=user.1bcfca12-82a6-49f3-bae9-2907d78cd9c0
+// NEXT_PUBLIC_CLIENT_SECRET=0SwiBZV8dyVvPmZ6H4fAJjUA6SY2KT
 // # optional – only needed when you later decrypt the vault
 // NEXT_PUBLIC_MASTER_PASSWORD=myMasterPassword
 // -----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ const CLIENT_SECRET  = process.env.NEXT_PUBLIC_CLIENT_SECRET ?? '';
 const MASTER_PASSWORD = process.env.NEXT_PUBLIC_MASTER_PASSWORD ?? '';
 
 if (!API_URL || !CLIENT_ID || !CLIENT_SECRET) {
-  // eslint-disable-next-line no-console
+  // eslint‑disable‑next‑line no-console
   console.warn('[Vault] Missing env variables – check your .env.local');
 }
 
@@ -45,7 +45,7 @@ export default function Vault() {
     }
   }
 
-  /** Get OAuth token using the client-credential flow */
+  /** Get OAuth token using the client‑credential flow */
   async function handleLogin() {
     setStatus('Getting token…');
     setErrorMsg('');

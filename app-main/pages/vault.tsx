@@ -10,6 +10,7 @@
 // -----------------------------------------------------------------------------
 
 import { useState } from 'react';
+import { decryptVault, DecryptedCipher } from '../lib/decryptVault';
 
 /** Grab secrets from the env (Next.js exposes only *NEXT_PUBLIC_* on the client) */
 const API_URL        = process.env.NEXT_PUBLIC_VAULT_URL     ?? '';
@@ -25,6 +26,7 @@ if (!API_URL || !CLIENT_ID || !CLIENT_SECRET) {
 export default function Vault() {
   const [status, setStatus] = useState('');
   const [vaultData, setVaultData] = useState<any>(null);
+  const [vaultItems, setVaultItems] = useState<DecryptedCipher[] | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   /** POST to /api/vault/sync and populate the view */
@@ -38,6 +40,14 @@ export default function Vault() {
 
     if (!res.error) {
       setVaultData(res);
+      if (MASTER_PASSWORD) {
+        try {
+          const items = await decryptVault(res, MASTER_PASSWORD);
+          setVaultItems(items);
+        } catch (e: any) {
+          setErrorMsg(`Decrypt failed: ${e.message}`);
+        }
+      }
       setStatus('Vault synced');
     } else {
       setStatus('Sync failed');
@@ -90,6 +100,12 @@ export default function Vault() {
       {vaultData && (
         <pre className="mt-6 text-xs whitespace-pre-wrap break-all bg-gray-100 p-4 rounded max-h-[60vh] overflow-auto">
           {JSON.stringify(vaultData, null, 2)}
+        </pre>
+      )}
+
+      {vaultItems && (
+        <pre className="mt-6 text-xs whitespace-pre-wrap break-all bg-green-100 p-4 rounded max-h-[60vh] overflow-auto">
+          {JSON.stringify(vaultItems, null, 2)}
         </pre>
       )}
 

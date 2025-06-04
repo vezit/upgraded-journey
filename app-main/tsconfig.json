@@ -25,6 +25,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "**/*.d.ts",
     "pages/drinks/[slug].js"
  ],
   "exclude": [

@@ -73,7 +73,7 @@ export async function deriveMasterKeyArgon2id(
   p: Argon2Params,
 ): Promise<ArrayBuffer> {
   // Lazy import so the WASM only loads in browser
-  const { hash, ArgonType } = await import('argon2-browser');
+  const { hash, ArgonType } = await import('argon2-browser/dist/argon2-bundled.min.js');
   const res: any = await hash({
     pass: password,
     salt: email,
@@ -84,7 +84,7 @@ export async function deriveMasterKeyArgon2id(
     type: ArgonType.Argon2id,
     raw: true,
   });
-  return (res.hash as Uint8Array).buffer;
+  return new Uint8Array(res.hash).buffer;
 }
 
 //---------------------------------------------------------------

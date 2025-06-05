@@ -29,6 +29,7 @@ const domainFrom = (raw?: string) => {
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
+  const [query, setQuery] = useState('')
 
   const { hoveredId, setHoveredId } = useHoverStore()
   const { hidden, hide, unhide } = useHiddenStore()
@@ -133,6 +134,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         <tbody>
           {vault.items
             .filter((item: any) => !hidden.includes(`item-${item.id}`))
+            .filter((item: any) =>
+              item.name?.toLowerCase().includes(query.toLowerCase())
+            )
 
             .map((item: any, index: number) => {
 

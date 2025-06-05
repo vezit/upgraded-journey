@@ -35,6 +35,7 @@ export default function EditItemModal({ index, onClose }: Props) {
 
   const { setGraph } = useGraph()
 
+
   const handleSave = () => {
     const items = [...vault.items]
     items[index] = item

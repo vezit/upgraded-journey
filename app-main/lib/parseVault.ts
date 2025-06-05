@@ -125,7 +125,7 @@ export const parseVault = (vault: any) => {
   })
 
   // -------------------------------------------------------------------------
-  // Pass 3: iterative layout tweak – place recovery nodes BELOW dependants
+  // Pass 3: iterative layout tweak – place recovery nodes ABOVE dependants
   // We run a few iterations so chains (A → B → C) cascade correctly.
   // -------------------------------------------------------------------------
   const nodeMap: Record<string, Node> = {}
@@ -136,17 +136,17 @@ export const parseVault = (vault: any) => {
     nodes.forEach((n) => {
       if (!n.data?.isRecovery) return
 
-      const incoming = edges.filter((e) => e.target === n.id)
-      if (!incoming.length) return
+      const outgoing = edges.filter((e) => e.source === n.id)
+      if (!outgoing.length) return
 
-      const xs = incoming.map((e) => nodeMap[e.source]?.position.x || 0)
-      const ys = incoming.map((e) => nodeMap[e.source]?.position.y || 0)
+      const xs = outgoing.map((e) => nodeMap[e.target]?.position.x || 0)
+      const ys = outgoing.map((e) => nodeMap[e.target]?.position.y || 0)
 
       const avgX = xs.reduce((a, b) => a + b, 0) / xs.length
-      const maxY = Math.max(...ys)
+      const minY = Math.min(...ys)
 
       n.position.x = avgX
-      n.position.y = maxY + stepY
+      n.position.y = minY - stepY
     })
   }
 

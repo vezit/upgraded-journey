@@ -17,6 +17,7 @@ import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
 import { useLockedStore } from '@/contexts/LockedStore'
+import { useLostStore } from '@/contexts/LostStore'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
@@ -31,6 +32,7 @@ function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()
   const { hidden } = useHiddenStore()
   const { locked } = useLockedStore()
+  const { lost, clearLost, markLost } = useLostStore()
   const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
@@ -166,9 +168,13 @@ function DiagramContent() {
           </li>
           <li
             className="px-3 py-1 cursor-pointer hover:bg-gray-100"
-            onClick={()=>{setLostId(menu.id);setMenu(null)}}
+            onClick={()=>{
+              if(lost.includes(menu.id)) clearLost(menu.id)
+              else setLostId(menu.id)
+              setMenu(null)
+            }}
           >
-            Lost Access
+            {lost.includes(menu.id) ? 'Have Access' : 'Lost Access'}
           </li>
         </ul>
       )}

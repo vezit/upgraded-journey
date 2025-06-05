@@ -23,7 +23,7 @@ export interface VaultData {
 
 const personalTemplate: VaultData = {
     folders: [
-      { id: 'personal', name: 'Personal' },
+      { id: 'personal', name: 'vault.reipur.dk' },
       { id: 'vault.reipur.dk', name: 'vault.reipur.dk', parentId: 'personal' },
 
       { id: 'family', name: 'Family', parentId: 'vault.reipur.dk' },

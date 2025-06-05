@@ -1,8 +1,18 @@
 import type { Edge, Node } from 'reactflow'
 
 // quick helper ---------------------------------------------------------------
-const domainFrom = (raw: string | undefined) =>
-  raw ? new URL(raw).hostname.replace(/^www\./, '') : undefined
+const domainFrom = (raw: string | undefined) => {
+  if (!raw) return undefined
+  try {
+    return new URL(raw).hostname.replace(/^www\./, '')
+  } catch {
+    try {
+      return new URL(`http://${raw}`).hostname.replace(/^www\./, '')
+    } catch {
+      return undefined
+    }
+  }
+}
 
 const logoFor = (domain?: string) =>
   domain ? `https://logo.clearbit.com/${domain}` : '/img/default.svg'

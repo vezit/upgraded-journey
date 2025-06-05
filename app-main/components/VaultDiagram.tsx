@@ -5,6 +5,7 @@ import ReactFlow, {
   Controls,
   MiniMap,
   applyNodeChanges,
+  addEdge,
   NodeChange,
   Node,
   Connection,
@@ -49,14 +50,15 @@ export default function VaultDiagram() {
   )
 
   const onConnect = useCallback(
-    (connection: Connection) => {
-      if (!connection.source || !connection.target) return
-      const id = `edge-${connection.source}-${connection.target}`
-      if (edges.some((e) => e.id === id)) return
-      addEdge({ id, source: connection.source, target: connection.target, style: { stroke: '#8b5cf6' } })
-      addRecovery(connection.source.replace(/^item-/, ''), connection.target.replace(/^item-/, ''))
+    (conn: Connection) => {
+      const targetNode = nodes.find(n => n.id === conn.target)
+      if (!targetNode?.data?.isRecovery) {
+        alert('Only recovery methods can be targets')
+        return
+      }
+      setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
     },
-    [edges, addEdge, addRecovery],
+    [nodes, edges, setGraph]
   )
 
   return (
@@ -67,6 +69,7 @@ export default function VaultDiagram() {
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
+        onConnect={onConnect}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()
           const rect = diagramRef.current?.getBoundingClientRect()

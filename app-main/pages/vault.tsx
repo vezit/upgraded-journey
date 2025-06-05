@@ -3,7 +3,7 @@ import VaultDiagram from '@/components/VaultDiagram'
 import VaultEditor from '@/components/VaultEditor'
 import ExportButton from '@/components/ExportButton'
 import { parseVault } from '@/lib/parseVault'
-import { saveVault } from '@/lib/storage'
+import { saveVault, clearVault } from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 

@@ -9,6 +9,7 @@ import ReactFlow, {
   NodeChange,
   Node,
   Connection,
+  useStore,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -28,7 +29,7 @@ export default function VaultDiagram() {
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
-  const [locked, setLocked] = useState(true)
+  const isInteractive = useStore((s) => s.nodesDraggable && s.nodesConnectable && s.elementsSelectable)
   const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
 
   useEffect(() => {
@@ -42,6 +43,19 @@ export default function VaultDiagram() {
     if(idx!==undefined && idx>-1) setEditIndex(idx)
   }
 
+  const openMenu = (e: React.MouseEvent, n: Node) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if(!isInteractive){
+      handleEdit(n.id)
+      return
+    }
+    const rect = diagramRef.current?.getBoundingClientRect()
+    const x = rect ? e.clientX - rect.left : e.clientX
+    const y = rect ? e.clientY - rect.top : e.clientY
+    setMenu({ x, y, id: n.id })
+  }
+
   useEffect(()=>{
     const close = ()=>setMenu(null)
     document.addEventListener('click', close)
@@ -52,7 +66,7 @@ export default function VaultDiagram() {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const updated = applyNodeChanges(changes, nodes)
-      if(!locked){
+      if(isInteractive){
         const map = { ...positionsRef.current }
         changes.forEach(c=>{
           if(c.type==='position' && (c as any).position){
@@ -64,7 +78,7 @@ export default function VaultDiagram() {
       }
       setGraph({ nodes: updated, edges })
     },
-    [setGraph, nodes, edges, locked]
+    [setGraph, nodes, edges, isInteractive]
   )
 
   const onConnect = useCallback(
@@ -91,30 +105,20 @@ export default function VaultDiagram() {
 
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
-      <button
-        onClick={() => setLocked(l => !l)}
-        className="absolute top-2 right-2 z-10 bg-white border rounded px-2 py-1 text-sm"
-      >
-        {locked ? 'Unlock' : 'Lock'}
-      </button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
-        onNodeClick={(e:React.MouseEvent, n:Node) => {
-          const rect = diagramRef.current?.getBoundingClientRect()
-          const x = rect ? e.clientX - rect.left : e.clientX
-          const y = rect ? e.clientY - rect.top : e.clientY
-          setMenu({ x, y, id: n.id })
-        }}
-        nodesDraggable={!locked}
+        onNodeClick={openMenu}
+        onNodeContextMenu={openMenu}
+        nodesDraggable={isInteractive}
         fitView
       >
         <Background />
         <MiniMap pannable />
-        <Controls />
+        <Controls showInteractive />
       </ReactFlow>
       {/* Legend --------------------------------------------------------- */}
       <div className="absolute top-1 left-1 z-10 text-xs space-y-1">

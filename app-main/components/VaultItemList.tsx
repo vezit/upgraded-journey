@@ -1,9 +1,12 @@
 'use client'
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 
-type Props = { onEdit: (index: number) => void }
+import { useHoverStore } from '@/contexts/HoverStore'
+import { EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/24/solid'
+
+type Props = { onEdit: (index: number) => void; onClose?: () => void }
+
 
 const domainFrom = (raw?: string) => {
   if (!raw) return undefined
@@ -18,9 +21,12 @@ const domainFrom = (raw?: string) => {
   }
 }
 
-export default function VaultItemList({ onEdit }: Props) {
+
+export default function VaultItemList({ onEdit, onClose }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
+  const { hoveredId, setHoveredId } = useHoverStore()
+
 
   if (!vault?.items) return null
 
@@ -40,6 +46,11 @@ export default function VaultItemList({ onEdit }: Props) {
 
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
+      <div className="flex justify-end p-1">
+        {onClose && (
+          <XMarkIcon onClick={onClose} className="h-5 w-5 cursor-pointer" />
+        )}
+      </div>
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
@@ -58,8 +69,10 @@ export default function VaultItemList({ onEdit }: Props) {
             return (
               <tr
                 key={item.id}
-                className="bg-white hover:bg-gray-50 border-t cursor-pointer"
+                className={`bg-white hover:bg-gray-50 border-t cursor-pointer ${highlighted ? 'bg-indigo-50' : ''}`}
                 onClick={() => onEdit(index)}
+                onMouseEnter={() => setHoveredId(rowId)}
+                onMouseLeave={() => setHoveredId(null)}
               >
                 <td className="px-4 py-3">
                   <input

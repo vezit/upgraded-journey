@@ -1,6 +1,5 @@
 import UploadZone from '@/components/UploadZone'
 import VaultDiagram from '@/components/VaultDiagram'
-import VaultEditor from '@/components/VaultEditor'
 import ExportButton from '@/components/ExportButton'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
@@ -20,12 +19,7 @@ export default function Vault() {
   return (
     <div className="p-4 flex flex-col gap-4 mx-auto max-w-7xl px-6">
       <UploadZone onLoad={handleLoad} />
-      {vault && (
-        <>
-          <VaultEditor />
-          <ExportButton />
-        </>
-      )}
+      {vault && <ExportButton />}
       <VaultDiagram />
       <button
         onClick={() => {

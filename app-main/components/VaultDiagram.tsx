@@ -21,10 +21,11 @@ import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
+import GroupNode from './GroupNode'
 import LostModal from './LostModal'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 
-const nodeTypes = { vault: VaultNode }
+const nodeTypes = { vault: VaultNode, group: GroupNode }
 
 function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()

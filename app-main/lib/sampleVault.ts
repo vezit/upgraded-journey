@@ -24,15 +24,16 @@ const templates: Record<TemplateName, VaultData> = {
   demo: {
     folders: [
       { id: 'vault.reipur.dk', name: 'vault.reipur.dk' },
+      { id: 'personal', name: 'Personal', parentId: 'vault.reipur.dk' },
       { id: 'family', name: 'Family', parentId: 'vault.reipur.dk' },
-      { id: '2favault.reipur.dk', name: '2favault.reipur.dk', parentId: 'vault.reipur.dk' },
+      { id: '2favault.reipur.dk', name: '2favault.reipur.dk' },
     ],
     items: [
       {
         id: '5812e279-62f3-4cd6-a3b2-e01058b7c3fb',
         type: 1,
         name: 'Facebook',
-        folderId: 'vault.reipur.dk',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -48,7 +49,7 @@ const templates: Record<TemplateName, VaultData> = {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
         name: 'Gmail',
-        folderId: 'vault.reipur.dk',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -64,7 +65,7 @@ const templates: Record<TemplateName, VaultData> = {
         id: 'a17ed712-5dcc-4b78-b9a7-9109a3567845',
         type: 1,
         name: 'LinkedIn',
-        folderId: 'vault.reipur.dk',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -124,7 +125,7 @@ const templates: Record<TemplateName, VaultData> = {
         id: '5bdd19e4-9973-41a5-9b5f-08e54ec42431',
         type: 1,
         name: 'Vaultwarden Dev',
-        folderId: 'vault.reipur.dk',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',

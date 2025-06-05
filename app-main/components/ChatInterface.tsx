@@ -24,7 +24,13 @@ Each item has a custom field “vaultdiagram-id” that uniquely identifies it. 
   • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
   • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
 
-When helping the user, explain how to create or edit these fields so the application can automatically create edges between items.`
+When helping the user, explain how to create or edit these fields so the application can automatically create edges between items. Never request or store passwords or other sensitive secrets.`
+
+// -----------------------------------------------------------------------------
+// 👋  Initial assistant prompt shown to new users
+// -----------------------------------------------------------------------------
+const WELCOME_PROMPT =
+  'Which service do you use (e.g. Facebook)? What is your email? Do you have a LinkedIn account?'
 
 // -----------------------------------------------------------------------------
 // 🔖  Price labels + Tailwind colour classes
@@ -43,6 +49,7 @@ export default function ChatInterface({ onClose }: Props) {
   const [input, setInput]     = useState('')
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'assistant', content: WELCOME_PROMPT },
   ])
   const [isTyping, setIsTyping] = useState(false)
 
@@ -81,7 +88,10 @@ export default function ChatInterface({ onClose }: Props) {
     }
     setApiKey('')
     setModel('gpt-4o')
-    setMessages([{ role: 'system', content: SYSTEM_PROMPT }])
+    setMessages([
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'assistant', content: WELCOME_PROMPT },
+    ])
   }
 
   const { vault, setVault, addRecoverySlug, addTwofa, createItem, updateItemBySlug } = useVault()
@@ -92,7 +102,20 @@ export default function ChatInterface({ onClose }: Props) {
     storage.saveVault(JSON.stringify(v))
   }
 
-  const FUNCTIONS = [
+  const extractPassword = (text: string) => {
+    const match = text.match(/password\s*(?:is|:|=)\s*([^\s]+)/i)
+    return match ? match[1].replace(/^['"]|['"]$/g, '') : null
+  }
+
+  const stripPassword = (text: string) =>
+    text.replace(/password\s*(?:is|:|=)\s*([^\s]+)/gi, 'password: [REDACTED]')
+
+  const lastPassword = {
+    current: null as string | null,
+  }
+
+const FUNCTIONS = [
+
     {
       type: 'function',
       function: {
@@ -167,14 +190,23 @@ export default function ChatInterface({ onClose }: Props) {
         const { name, arguments: args } = c.function
         const data = JSON.parse(args || '{}')
         if (name === 'create_item') {
+          if (!data.password && lastPassword.current) {
+            data.password = lastPassword.current
+          }
           createItem(data)
+          lastPassword.current = null
           const updated = { ...useVault.getState().vault }
           if (updated) {
             setVault(updated)
             updateGraph(updated)
           }
         } else if (name === 'edit_item') {
-          updateItemBySlug(data.slug, data.field, data.value)
+          const value =
+            data.field === 'password' && !data.value && lastPassword.current
+              ? lastPassword.current
+              : data.value
+          updateItemBySlug(data.slug, data.field, value)
+          if (data.field === 'password') lastPassword.current = null
           const updated = { ...useVault.getState().vault }
           if (updated) {
             setVault(updated)
@@ -204,7 +236,10 @@ export default function ChatInterface({ onClose }: Props) {
   const send = async () => {
     if (!apiKey || !input.trim()) return
 
-    const userMsg: Message = { role: 'user', content: input }
+    lastPassword.current = extractPassword(input)
+
+    const sanitized = stripPassword(input)
+    const userMsg: Message = { role: 'user', content: sanitized }
     const history = [...messages, userMsg]
     setMessages(history)
     setInput('')
@@ -300,7 +335,7 @@ export default function ChatInterface({ onClose }: Props) {
       {ModelSelect}
 
       <div className="flex-1 overflow-y-auto mb-2 space-y-2">
-        {messages.map((m, i) => (
+        {messages.filter((m) => m.role !== 'system').map((m, i) => (
           <div key={i} className={m.role === 'user' ? 'text-right' : 'text-left'}>
             <div className="inline-block bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded break-words">
               {m.content}

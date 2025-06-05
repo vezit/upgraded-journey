@@ -4,21 +4,29 @@ This repository contains a small Next.js application used to visualize Bitwarden
 
 ## Recovery Relationship Field
 
-Vaultdiagram recognizes a custom Bitwarden field named `vaultdiagram-recovery-map` to describe account recovery relationships. The field value must be valid JSON with optional keys:
+Vaultdiagram uses two custom fields to keep recovery relationships intact when a
+vault is exported and re‑imported:
 
-- `recovers`: array of item names the current item can recover.
-- `recovered_by`: array of item names that can recover the current item.
+* `vaultdiagram-id` &ndash; a pseudo human readable identifier that is unique per
+  item.
+* `vaultdiagram-recovery-map` &ndash; JSON describing recovery relationships using
+  the above identifiers.
 
-Example for an item that recovers two others:
+The JSON object may contain the optional keys:
+
+* `recovers` – array of `vaultdiagram-id` values that this item can recover.
+* `recovered_by` – array of `vaultdiagram-id` values that can recover this item.
+
+Example for an item with the identifier `gmail-1863` that recovers two others:
 
 ```json
-{"recovers": ["LinkedIn", "Netflix"]}
+{"recovers": ["linkedin-7845", "netflix-30a1"]}
 ```
 
-The recovered items would include the opposite link:
+The recovered items would reference the recovering identifier:
 
 ```json
-{"recovered_by": ["Gmail"]}
+{"recovered_by": ["gmail-1863"]}
 ```
 
 Keeping the value structured allows the application to automatically create edges between items when parsing the vault.

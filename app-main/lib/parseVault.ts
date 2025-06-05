@@ -43,6 +43,12 @@ export const parseVault = (vault: any) => {
   let col = 0
   let row = 0
 
+  // Slug → item‑id lookup for JSON‑based recovery mapping
+  const slugToId: Record<string, string> = {}
+
+  // -------------------------------------------------------------------------
+  // Pass 1: create all nodes and collect slugs
+  // -------------------------------------------------------------------------
   vault.items.forEach((item: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
@@ -51,6 +57,10 @@ export const parseVault = (vault: any) => {
     const isRecovery = item.fields?.some(
       (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
     )
+
+    // Optional custom slug used by the vaultdiagram‑recovery‑map convention
+    const slug = item.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
+    if (slug) slugToId[slug] = itemId
 
     const x = margin + col * stepX
     const y = margin + row * stepY
@@ -74,10 +84,14 @@ export const parseVault = (vault: any) => {
   })
 
   // -------------------------------------------------------------------------
-  // Create recovery edges (source ➜ target)
+  // Pass 2: create edges
+  //   a) Legacy field    :  field name = "recovery" (value is target item‑id)
+  //   b) New JSON mapping:  field name = "vaultdiagram-recovery-map"
   // -------------------------------------------------------------------------
   vault.items.forEach((item: any) => {
     const source = `item-${item.id}`
+
+    // a) legacy single‑id field ------------------------------------------------
     item.fields?.forEach((f: any) => {
       if (f.name === 'recovery' && f.value) {
         const target = `item-${f.value}`
@@ -89,12 +103,46 @@ export const parseVault = (vault: any) => {
         })
       }
     })
+
+    // b) JSON mapping ---------------------------------------------------------
+    const mapField = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')?.value
+    if (!mapField) return
+
+    let map: any
+    try {
+      map = JSON.parse(mapField)
+    } catch {
+      return // ignore invalid JSON
+    }
+
+    const recovers: string[] = Array.isArray(map.recovers) ? map.recovers : []
+    const recoveredBy: string[] = Array.isArray(map.recovered_by) ? map.recovered_by : []
+
+    recovers.forEach((slug) => {
+      const target = slugToId[slug]
+      if (target)
+        edges.push({
+          id: `edge-${source}-${target}`,
+          source,
+          target,
+          style: { stroke: '#8b5cf6' },
+        })
+    })
+
+    recoveredBy.forEach((slug) => {
+      const src = slugToId[slug]
+      if (src)
+        edges.push({
+          id: `edge-${src}-${source}`,
+          source: src,
+          target: source,
+          style: { stroke: '#8b5cf6' },
+        })
+    })
   })
 
   // -------------------------------------------------------------------------
-  // SECOND‑PASS LAYOUT TWEAK -------------------------------------------------
-  // We want every *recovery node* to sit **below** the accounts it can recover
-  // (as per the demo’s desired appearance).
+  // Pass 3: layout tweak for recovery nodes – place them BELOW dependants
   // -------------------------------------------------------------------------
   const nodeMap: Record<string, Node> = {}
   nodes.forEach((n) => (nodeMap[n.id] = n))
@@ -102,7 +150,6 @@ export const parseVault = (vault: any) => {
   nodes.forEach((n) => {
     if (!n.data?.isRecovery) return
 
-    // Who points at me?
     const incoming = edges.filter((e) => e.target === n.id)
     if (!incoming.length) return
 
@@ -112,7 +159,6 @@ export const parseVault = (vault: any) => {
     const avgX = xs.reduce((a, b) => a + b, 0) / xs.length
     const maxY = Math.max(...ys)
 
-    // Re‑centre horizontally and push one row **below** dependants
     n.position.x = avgX
     n.position.y = maxY + stepY
   })

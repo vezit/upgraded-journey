@@ -13,16 +13,19 @@ const MODELS = ['gpt-3.5-turbo', 'gpt-4o', 'gpt-4-turbo'] as const
 export default function ChatInterface() {
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState<(typeof MODELS)[number]>('gpt-3.5-turbo')
+
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : ''
     if (stored) setApiKey(stored)
+
     const storedModel = typeof localStorage !== 'undefined' ? localStorage.getItem(MODEL_KEY) : ''
     if (storedModel && MODELS.includes(storedModel as (typeof MODELS)[number])) {
       setModel(storedModel as (typeof MODELS)[number])
     }
+
   }, [])
 
   const saveKey = () => {

@@ -5,8 +5,10 @@ import ReactFlow, {
   Controls,
   MiniMap,
   applyNodeChanges,
+  addEdge,
   NodeChange,
   Node,
+  Connection,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -18,8 +20,8 @@ import VaultNode from './VaultNode'
 const nodeTypes = { vault: VaultNode }
 
 export default function VaultDiagram() {
-  const { nodes, edges, setGraph } = useGraph()
-  const { vault } = useVault()
+  const { nodes, edges, setGraph, addEdge } = useGraph()
+  const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
@@ -47,13 +49,27 @@ export default function VaultDiagram() {
     [setGraph, nodes, edges]
   )
 
+  const onConnect = useCallback(
+    (conn: Connection) => {
+      const targetNode = nodes.find(n => n.id === conn.target)
+      if (!targetNode?.data?.isRecovery) {
+        alert('Only recovery methods can be targets')
+        return
+      }
+      setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
+    },
+    [nodes, edges, setGraph]
+  )
+
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onConnect={onConnect}
         onNodesChange={onNodesChange}
+        onConnect={onConnect}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()
           const rect = diagramRef.current?.getBoundingClientRect()

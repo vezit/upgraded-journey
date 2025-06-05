@@ -39,13 +39,14 @@
       "remoteRoot": "/usr/src/project/app-main",
       "skipFiles": ["<node_internals>/**"]
     },
-{
-      "name": "Launch firefox",
-      "type": "firefox",
+    {
+      "name": "Browser: chromium",
+      "type": "pwa-chrome",
       "request": "launch",
-      "reAttach": true,
+      "runtimeExecutable": "/usr/bin/google-chrome",
       "url": "http://localhost:3000/vault",
       "webRoot": "${workspaceFolder}/app-main",
+      "disableNetworkCache": true
     }
 
   ],
@@ -55,7 +56,7 @@
       "configurations": [
         "Next.js: Full Stack",
         "Attach to Next.js Router Server (9230)",
-        "Launch firefox"
+        "Browser: chromium"
       ]
     }
   ]

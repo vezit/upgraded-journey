@@ -16,6 +16,7 @@ import 'reactflow/dist/style.css'
 
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
+import { useHiddenStore } from '@/contexts/HiddenStore'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
@@ -26,6 +27,7 @@ const nodeTypes = { vault: VaultNode }
 
 function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()
+  const { hidden } = useHiddenStore()
   const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
@@ -104,11 +106,14 @@ function DiagramContent() {
     [nodes, edges, setGraph, vault, addRecovery]
   )
 
+  const visibleNodes = nodes.filter(n => !hidden.includes(n.id))
+  const visibleEdges = edges.filter(e => !hidden.includes(e.source) && !hidden.includes(e.target))
+
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={visibleNodes}
+        edges={visibleEdges}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}

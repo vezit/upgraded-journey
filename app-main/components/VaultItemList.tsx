@@ -49,7 +49,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   }, [width])
 
 
-  if (!vault?.items) return null
+  if (!vault) return null
+
+  const items = vault.items || []
 
   const toggleSelect = (idx: number) => {
     setSelected(prev =>
@@ -59,15 +61,15 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
 
   const toggleSelectAll = () => {
     setSelected(
-      selected.length === vault.items.length
+      selected.length === items.length
         ? []
-        : vault.items.map((_: unknown, i: number) => i)
+        : items.map((_: unknown, i: number) => i)
     )
   }
 
   const toggleHideSelected = () => {
-    if (!vault?.items) return
-    const ids = selected.map(i => `item-${vault.items[i].id}`)
+    if (!items.length) return
+    const ids = selected.map(i => `item-${items[i].id}`)
     const shouldHide = ids.some(id => !hidden.includes(id))
     if (shouldHide) hide(ids)
     else unhide(ids)
@@ -75,7 +77,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   }
 
   // sort indexes so recovery methods appear first in the list
-  const orderedIndexes = vault.items
+  const orderedIndexes = items
     .map((item: any, idx: number) => ({ item, idx }))
     .sort((a: { item: any; idx: number }, b: { item: any; idx: number }) => {
       const aRec = a.item.fields?.some(
@@ -146,7 +148,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
             <th className="px-4 text-left">
-              <input type="checkbox" checked={selected.length === vault.items.length} onChange={toggleSelectAll} />
+              <input type="checkbox" checked={selected.length === items.length} onChange={toggleSelectAll} />
             </th>
             <th className="text-left">
               <div className="flex items-center gap-1">
@@ -155,7 +157,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                   onClick={toggleHideSelected}
                   className="text-xs text-gray-500 hover:text-gray-700"
                 >
-                  {selected.every(i => hidden.includes(`item-${vault.items[i].id}`)) ? 'Unhide' : 'Hide'}
+                  {selected.every(i => hidden.includes(`item-${items[i].id}`)) ? 'Unhide' : 'Hide'}
                 </button>
               </div>
             </th>
@@ -163,7 +165,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           </tr>
         </thead>
         <tbody>
-          {vault.items
+          {items
             .filter((item: any) => !hidden.includes(`item-${item.id}`))
             .filter((item: any) =>
               item.name?.toLowerCase().includes(query.toLowerCase())

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
+import { useGraph } from '@/contexts/GraphStore'
+import { parseVault } from '@/lib/parseVault'
 import { EyeIcon, EyeSlashIcon, PlusIcon, TrashIcon, StarIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 
@@ -31,10 +33,15 @@ export default function EditItemModal({ index, onClose }: Props) {
     updateItemState({ fields })
   }
 
+  const { setGraph } = useGraph()
+
+
   const handleSave = () => {
     const items = [...vault.items]
     items[index] = item
-    setVault({ ...vault, items })
+    const updatedVault = { ...vault, items }
+    setVault(updatedVault)
+    setGraph(parseVault(updatedVault))
     onClose()
   }
 

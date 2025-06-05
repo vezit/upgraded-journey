@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useRef } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -20,6 +20,7 @@ const nodeTypes = { vault: VaultNode }
 export default function VaultDiagram() {
   const { nodes, edges, setGraph } = useGraph()
   const { vault } = useVault()
+  const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
 
@@ -47,15 +48,18 @@ export default function VaultDiagram() {
   )
 
   return (
-    <div className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
+    <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
-        onNodeContextMenu={(e:React.MouseEvent, n:Node)=>{
+        onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()
-          setMenu({x:e.clientX,y:e.clientY,id:n.id})
+          const rect = diagramRef.current?.getBoundingClientRect()
+          const x = rect ? e.clientX - rect.left : e.clientX
+          const y = rect ? e.clientY - rect.top : e.clientY
+          setMenu({ x, y, id: n.id })
         }}
         fitView
       >

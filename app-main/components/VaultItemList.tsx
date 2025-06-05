@@ -29,6 +29,7 @@ const domainFrom = (raw?: string) => {
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
+  const [hidden, setHidden] = useState<number[]>([])
   const { hoveredId, setHoveredId } = useHoverStore()
 
 
@@ -46,6 +47,11 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         ? []
         : vault.items.map((_: unknown, i: number) => i)
     )
+  }
+
+  const hideSelected = () => {
+    setHidden(prev => Array.from(new Set([...prev, ...selected])))
+    setSelected([])
   }
 
   return (
@@ -73,6 +79,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         </div>
       )}
 
+
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
@@ -84,10 +91,15 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           </tr>
         </thead>
         <tbody>
-          {vault.items.map((item: any, index: number) => {
+          {vault.items
+            .filter((_: any, index: number) => !hidden.includes(index))
+            .map((item: any, index: number) => {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+            const isRecovery = item.fields?.some(
+              (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+            )
 
             const rowId = `item-${item.id}`
             const highlighted = hoveredId === rowId
@@ -119,6 +131,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
+                    {isRecovery && (
+                      <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
+                    )}
                   </div>
                 </td>
                 <td className="text-right px-4">

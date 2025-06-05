@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
+
 import * as storage from '@/lib/storage'
+
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -10,6 +12,7 @@ import {
   TrashIcon,
   StarIcon,
 } from '@heroicons/react/24/outline'
+
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 
 type Props = { index?: number; onClose: () => void }
@@ -311,10 +314,9 @@ export default function EditItemModal({ index, onClose }: Props) {
             Recovery Method
           </label>
         </div>
-        {!isRecovery && (
-          <div className="space-y-2">
-            <div>
-              <label className="block text-sm font-medium mb-1">Recovery Items</label>
+        <div className="space-y-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Recovery Items</label>
               {recoveredBy.map((slug) => (
                 <div key={slug} className="flex items-center gap-2 mb-1">
                   <span className="flex-1 text-sm">{nameForSlug(slug)}</span>
@@ -358,11 +360,16 @@ export default function EditItemModal({ index, onClose }: Props) {
                   className="border border-gray-300 rounded-md px-2 py-1 flex-1"
                 >
                   <option value="">Select item…</option>
-                  {recoveryItems.map((ri: any) => (
-                    <option key={ri.id} value={ri.id}>
-                      {ri.name}
-                    </option>
-                  ))}
+                  {recoveryItems
+                    .filter((ri: any) => {
+                      const slug = slugFor(String(ri.id))
+                      return slug && !providers.includes(slug)
+                    })
+                    .map((ri: any) => (
+                      <option key={ri.id} value={ri.id}>
+                        {ri.name}
+                      </option>
+                    ))}
                 </select>
                 <button type="button" onClick={addTwofaMap} className="p-1 bg-gray-100 rounded hover:bg-gray-200">
                   Add
@@ -370,7 +377,6 @@ export default function EditItemModal({ index, onClose }: Props) {
               </div>
             </div>
           </div>
-        )}
         <div>
           <label className="block text-sm font-medium mb-2">Custom Fields</label>
             <div className="flex items-center space-x-2 mb-2">
@@ -492,10 +498,12 @@ export default function EditItemModal({ index, onClose }: Props) {
                 type="button"
                 onClick={() => {
                   const items = vault.items.filter((_: any, i: number) => i !== index)
+
                   const updated = { ...vault, items }
                   setVault(updated)
                   setGraph(parseVault(updated))
                   storage.saveVault(JSON.stringify(updated))
+
                   onClose()
                 }}
               >

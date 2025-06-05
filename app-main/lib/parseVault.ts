@@ -46,6 +46,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
 
   // Slug → item‑id lookup for JSON‑based recovery mapping
   const slugToId: Record<string, string> = {}
+  const idToFolder: Record<string, string | undefined> = {}
 
   // -------------------------------------------------------------------------
   // Pass 1: create all nodes and collect slugs
@@ -91,6 +92,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
 
     const slug = item.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
     if (slug) slugToId[slug] = itemId
+    idToFolder[itemId] = item.folderId
 
     const x = margin + col * stepX
     const y = margin + row * stepY
@@ -162,8 +164,10 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
         const providers: string[] = Array.isArray(map2fa.providers) ? map2fa.providers : []
         providers.forEach((slug: string) => {
           const src = slugToId[slug]
-          if (src)
-            edges.push({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke: '#0ea5e9', strokeDasharray: '4 2' } })
+          if (src) {
+            const stroke = idToFolder[source] === '2favault.reipur.dk' ? '#8b5cf6' : '#0ea5e9'
+            edges.push({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke, strokeDasharray: '4 2' } })
+          }
         })
       } catch {}
     }

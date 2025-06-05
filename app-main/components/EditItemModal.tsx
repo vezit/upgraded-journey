@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
+import { useGraph } from '@/contexts/GraphStore'
+import { parseVault } from '@/lib/parseVault'
 import { EyeIcon, EyeSlashIcon, PlusIcon, TrashIcon, StarIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 
@@ -16,12 +18,29 @@ export default function EditItemModal({ index, onClose }: Props) {
   const [showTotp, setShowTotp] = useState(false)
   const [newFieldType, setNewFieldType] = useState('0')
 
-  const updateItemState = (partial: any) => setItem((prev: any) => ({ ...prev, ...partial }))
+  const updateItemState = (partial: any) =>
+    setItem((prev: any) => ({ ...prev, ...partial }))
+
+  const isRecovery = item.fields?.some(
+    (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+  )
+
+  const toggleRecovery = () => {
+    const fields = [...(item.fields || [])]
+    const idx = fields.findIndex((f) => f.name === 'recovery_node')
+    if (idx > -1) fields.splice(idx, 1)
+    else fields.push({ name: 'recovery_node', value: 'true', type: 0 })
+    updateItemState({ fields })
+  }
+
+  const { setGraph } = useGraph()
 
   const handleSave = () => {
     const items = [...vault.items]
     items[index] = item
-    setVault({ ...vault, items })
+    const updatedVault = { ...vault, items }
+    setVault(updatedVault)
+    setGraph(parseVault(updatedVault))
     onClose()
   }
 
@@ -174,6 +193,18 @@ export default function EditItemModal({ index, onClose }: Props) {
               className="w-full border border-gray-300 rounded-md px-3 py-2"
               rows={4}
             />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              id="recovery-method"
+              type="checkbox"
+              checked={isRecovery}
+              onChange={toggleRecovery}
+              className="h-4 w-4"
+            />
+            <label htmlFor="recovery-method" className="text-sm">
+              Recovery Method
+            </label>
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Custom Fields</label>

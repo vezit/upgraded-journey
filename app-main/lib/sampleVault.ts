@@ -21,8 +21,7 @@ export interface VaultData {
   folders?: { id: string; name: string; parentId?: string }[]
 }
 
-const templates: Record<TemplateName, VaultData> = {
-  personal: {
+const personalTemplate: VaultData = {
     folders: [
       { id: 'personal', name: 'Personal' },
       { id: 'vault.reipur.dk', name: 'vault.reipur.dk', parentId: 'personal' },
@@ -171,8 +170,9 @@ const templates: Record<TemplateName, VaultData> = {
         ],
       },
     ],
-  },
-  organization: {
+};
+
+const organizationExtras: VaultData = {
     folders: [
       { id: 'organization', name: 'Organization' },
       { id: 'acme', name: 'Acme Corp', parentId: 'organization' },
@@ -223,10 +223,14 @@ const templates: Record<TemplateName, VaultData> = {
         ],
       },
     ],
-  },
-}
+  }
 
 export function createTemplate(name: TemplateName): VaultData {
-  // deep clone to avoid accidental mutations
-  return JSON.parse(JSON.stringify(templates[name]))
+  const base = JSON.parse(JSON.stringify(personalTemplate))
+  if (name === 'organization') {
+    const extra = JSON.parse(JSON.stringify(organizationExtras))
+    if (extra.folders) base.folders = [...(base.folders || []), ...extra.folders]
+    base.items.push(...extra.items)
+  }
+  return base
 }

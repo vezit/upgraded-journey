@@ -35,6 +35,16 @@ export default function ChatInterface() {
     }
   }
 
+  const deleteKey = () => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(MODEL_KEY)
+    }
+    setApiKey('')
+    setModel('gpt-3.5-turbo')
+    setMessages([])
+  }
+
   const send = async () => {
     if (!apiKey || !input.trim()) return
     const userMsg: Message = { role: 'user', content: input }
@@ -97,7 +107,15 @@ export default function ChatInterface() {
 
   return (
     <div className="border rounded p-4 w-full md:w-80 flex flex-col h-[80vh]">
-      <div className="mb-1 font-medium">Model</div>
+      <div className="flex justify-between items-center mb-1">
+        <span className="font-medium">Model</span>
+        <button
+          onClick={deleteKey}
+          className="text-red-600 text-sm underline"
+        >
+          Delete Key
+        </button>
+      </div>
       <select
         className="border px-2 py-1 mb-2 rounded"
         value={model}

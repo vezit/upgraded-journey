@@ -6,11 +6,13 @@ import { VaultGraph } from '@/lib/parseVault'
 interface GraphState {
   nodes: Node[]
   edges: Edge[]
-  setGraph: (g: VaultGraph)=>void
+  setGraph: (g: VaultGraph) => void
+  addEdge: (e: Edge) => void
 }
 
-export const useGraph = create<GraphState>(set=>({
+export const useGraph = create<GraphState>(set => ({
   nodes: [],
   edges: [],
   setGraph: g => set(g),
+  addEdge: e => set(state => ({ edges: [...state.edges, e] })),
 }))

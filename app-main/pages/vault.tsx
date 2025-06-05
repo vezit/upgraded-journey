@@ -3,6 +3,7 @@ import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
 import ChatInterface from '@/components/ChatInterface'
 import ExportButton from '@/components/ExportButton'
+import VersionHistoryModal from '@/components/VersionHistoryModal'
 import TemplateZone from '@/components/TemplateZone'
 import VaultItemList from '@/components/VaultItemList'
 import EditItemModal from '@/components/EditItemModal'
@@ -19,6 +20,7 @@ export default function Vault() {
 
   const [showList, setShowList] = useState(true)
   const [showChat, setShowChat] = useState(true)
+  const [showHistory, setShowHistory] = useState(false)
 
 
   const handleLoad = (data: any) => {
@@ -37,7 +39,17 @@ export default function Vault() {
           <TemplateZone onGenerate={handleLoad} />
         </>
       )}
-      {vault && <ExportButton />}
+      {vault && (
+        <div className="flex gap-2">
+          <ExportButton />
+          <button
+            onClick={() => setShowHistory(true)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded self-start"
+          >
+            Version History
+          </button>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row gap-4">
 
         {vault && showList && (
@@ -51,6 +63,9 @@ export default function Vault() {
       </div>
       {editIndex !== null && (
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
+      )}
+      {showHistory && (
+        <VersionHistoryModal onClose={() => setShowHistory(false)} />
       )}
     </div>
   )

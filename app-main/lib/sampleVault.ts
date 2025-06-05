@@ -31,7 +31,8 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'https://facebook.com', match: null }],
         },
         fields: [
-          { name: 'recovery', value: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863', type: 0 },
+          { name: 'vaultdiagram-id', value: 'facebook-c3fb', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
         ],
       },
       {
@@ -44,8 +45,9 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'https://gmail.com', match: null }],
         },
         fields: [
+          { name: 'vaultdiagram-id', value: 'gmail-1863', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
-          { name: 'recovery', value: '4a88069c-df55-404b-8421-8d9ad7092b11', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["facebook-c3fb","linkedin-7845","netflix-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
         ],
       },
       {
@@ -58,7 +60,8 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'https://linkedin.com', match: null }],
         },
         fields: [
-          { name: 'recovery', value: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863', type: 0 },
+          { name: 'vaultdiagram-id', value: 'linkedin-7845', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
         ],
       },
       {
@@ -71,7 +74,8 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'https://netflix.com', match: null }],
         },
         fields: [
-          { name: 'recovery', value: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863', type: 0 },
+          { name: 'vaultdiagram-id', value: 'netflix-30a1', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
         ],
       },
       {
@@ -82,7 +86,9 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'https://www.android.com/', match: null }],
         },
         fields: [
+          { name: 'vaultdiagram-id', value: 'phone-pixel-7a-2b11', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["gmail-1863"]}', type: 0 },
           { name: 'phone number', value: '004526129604', type: 0 },
         ],
       },
@@ -96,7 +102,8 @@ const templates: Record<TemplateName, VaultData> = {
           uris: [{ uri: 'vault.reipur.dk', match: null }],
         },
         fields: [
-          { name: 'recovery', value: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863', type: 0 },
+          { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
         ],
       },
     ],

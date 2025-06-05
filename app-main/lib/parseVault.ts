@@ -37,7 +37,7 @@ export const parseVault = (vault: any) => {
   let col = 0
   let row = 0
 
-  const nameToId: Record<string, string> = {}
+  const slugToId: Record<string, string> = {}
 
   vault.items.forEach((item: any) => {
     const itemId = `item-${item.id}`
@@ -49,7 +49,8 @@ export const parseVault = (vault: any) => {
         String(f.value).toLowerCase() === 'true'
     )
 
-    nameToId[item.name] = itemId
+    const slug = item.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
+    if (slug) slugToId[slug] = itemId
 
     const x = margin + col * stepX
     const y = margin + row * stepY
@@ -73,18 +74,27 @@ export const parseVault = (vault: any) => {
   })
 
 
-  vault.items.forEach((item:any)=>{
+  vault.items.forEach((item: any) => {
     const source = `item-${item.id}`
-    item.fields?.forEach((f:any)=>{
-      if(f.name==='recovery' && f.value){
-        const target = `item-${f.value}`
-        edges.push({
-          id:`edge-${source}-${target}`,
-          source,
-          target,
-          style:{ stroke:'#8b5cf6' },
-        })
-      }
+    const mapField = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')?.value
+    if (!mapField) return
+    let map: any
+    try {
+      map = JSON.parse(mapField)
+    } catch {
+      return
+    }
+    const recovers: string[] = Array.isArray(map.recovers) ? map.recovers : []
+    const recoveredBy: string[] = Array.isArray(map.recovered_by) ? map.recovered_by : []
+    recovers.forEach(slug => {
+      const target = slugToId[slug]
+      if (target)
+        edges.push({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
+    })
+    recoveredBy.forEach(slug => {
+      const src = slugToId[slug]
+      if (src)
+        edges.push({ id: `edge-${src}-${source}`, source: src, target: source, style: { stroke: '#8b5cf6' } })
     })
   })
 

@@ -333,11 +333,16 @@ export default function EditItemModal({ index, onClose }: Props) {
                   className="border border-gray-300 rounded-md px-2 py-1 flex-1"
                 >
                   <option value="">Select item…</option>
-                  {recoveryItems.map((ri: any) => (
-                    <option key={ri.id} value={ri.id}>
-                      {ri.name}
-                    </option>
-                  ))}
+                  {recoveryItems
+                    .filter((ri: any) => {
+                      const slug = slugFor(String(ri.id))
+                      return slug && !providers.includes(slug)
+                    })
+                    .map((ri: any) => (
+                      <option key={ri.id} value={ri.id}>
+                        {ri.name}
+                      </option>
+                    ))}
                 </select>
                 <button type="button" onClick={addTwofaMap} className="p-1 bg-gray-100 rounded hover:bg-gray-200">
                   Add

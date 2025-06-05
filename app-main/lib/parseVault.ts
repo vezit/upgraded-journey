@@ -264,7 +264,10 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
       pos.y += height + margin
     }
 
-    const offsetAbove = fid === '2favault.reipur.dk' ? height + margin : 0
+    let offsetAbove = 0
+    if (fid === '2favault.reipur.dk') {
+      offsetAbove = pos.y + height + margin
+    }
     pos.y -= offsetAbove
     if (offsetAbove) {
       children.forEach(n => {

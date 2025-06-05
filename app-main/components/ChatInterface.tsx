@@ -36,9 +36,9 @@ const WELCOME_PROMPT =
 // 🔖  Price labels + Tailwind colour classes
 // -----------------------------------------------------------------------------
 const PRICE_LABELS: Record<(typeof MODELS)[number], { label: string; color: string }> = {
-  'gpt-3.5-turbo': { label: 'cheapest',  color: 'text-green-600'  },
-  'gpt-4o':         { label: 'cheap',     color: 'text-yellow-600' },
-  'gpt-4-turbo':    { label: 'cheaplest', color: 'text-red-600'   }, // ⇠ most expensive
+  'gpt-3.5-turbo': { label: 'costleast',  color: 'text-green-600'  },
+  'gpt-4o':        { label: 'costing',    color: 'text-yellow-600' },
+  'gpt-4-turbo':   { label: 'costiest',   color: 'text-red-600'    }, // ⇠ most expensive
 }
 
 type Props = { onClose?: () => void }
@@ -288,9 +288,9 @@ const FUNCTIONS = [
         ))}
       </select>
       <div className="flex gap-3 text-sm mb-3">
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-600 inline-block"></span> cheapest</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-600 inline-block"></span> cheap</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-600 inline-block"></span> cheaplest</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-600 inline-block"></span> costleast</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-600 inline-block"></span> costing</span>
+        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-600 inline-block"></span> costiest</span>
       </div>
     </>
   )

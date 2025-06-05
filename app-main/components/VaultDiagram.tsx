@@ -1,4 +1,3 @@
-// components/VaultDiagram.tsx
 'use client'
 import React, { useCallback } from 'react'
 import ReactFlow, {
@@ -18,14 +17,14 @@ const nodeTypes = { vault: VaultNode }
 export default function VaultDiagram() {
   const { nodes, edges, setGraph } = useGraph()
 
-  /* allow the user to drag nodes and keep the new coordinates in state */
+  // allow the user to drag nodes and keep the new coordinates in state
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
-      setGraph((g) => ({
-        ...g,
-        nodes: applyNodeChanges(changes, g.nodes),
-      })),
-    [setGraph]
+      setGraph({
+        nodes: applyNodeChanges(changes, nodes),
+        edges,
+      }),
+    [setGraph, nodes, edges]
   )
 
   return (

@@ -1,5 +1,5 @@
 
-export type TemplateName = 'demo'
+export type TemplateName = 'personal' | 'organization'
 
 export interface VaultItem {
   id: string
@@ -7,6 +7,7 @@ export interface VaultItem {
   type: number
   name: string
   folderId?: string
+  organizationId?: string
   login: {
     username?: string
     password?: string
@@ -21,9 +22,10 @@ export interface VaultData {
 }
 
 const templates: Record<TemplateName, VaultData> = {
-  demo: {
+  personal: {
     folders: [
-      { id: 'vault.reipur.dk', name: 'vault.reipur.dk' },
+      { id: 'personal', name: 'Personal' },
+      { id: 'vault.reipur.dk', name: 'vault.reipur.dk', parentId: 'personal' },
       { id: 'family', name: 'Family', parentId: 'vault.reipur.dk' },
       { id: '2favault.reipur.dk', name: '2favault.reipur.dk', parentId: 'vault.reipur.dk' },
     ],
@@ -153,6 +155,58 @@ const templates: Record<TemplateName, VaultData> = {
         login: {},
         fields: [
           { name: 'vaultdiagram-id', value: 'linkedin-2fa-2222', type: 0 },
+        ],
+      },
+    ],
+  },
+  organization: {
+    folders: [
+      { id: 'organization', name: 'Organization' },
+      { id: 'acme', name: 'Acme Corp', parentId: 'organization' },
+    ],
+    items: [
+      {
+        id: '11111111-2222-4333-8444-555555555555',
+        type: 1,
+        name: 'Slack',
+        folderId: 'acme',
+        organizationId: 'org-demo',
+        login: {
+          username: 'john.doe@acme.com',
+          password: '',
+          uris: [{ uri: 'https://slack.com', match: null }],
+        },
+        fields: [
+          { name: 'vaultdiagram-id', value: 'slack-org', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["yubikey-org"]}', type: 0 },
+        ],
+      },
+      {
+        id: '22222222-3333-4444-8555-666666666666',
+        type: 1,
+        name: 'GitHub',
+        folderId: 'acme',
+        organizationId: 'org-demo',
+        login: {
+          username: 'jdoe',
+          password: '',
+          uris: [{ uri: 'https://github.com', match: null }],
+        },
+        fields: [
+          { name: 'vaultdiagram-id', value: 'github-org', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["yubikey-org"]}', type: 0 },
+        ],
+      },
+      {
+        id: '33333333-4444-5555-8666-777777777777',
+        type: 1,
+        name: 'YubiKey',
+        folderId: 'acme',
+        organizationId: 'org-demo',
+        login: {},
+        fields: [
+          { name: 'vaultdiagram-id', value: 'yubikey-org', type: 0 },
+          { name: 'recovery_node', value: 'true', type: 0 },
         ],
       },
     ],

@@ -10,7 +10,8 @@ export default function TemplateZone({ onGenerate }:{ onGenerate:(v:any)=>void }
     <div className="border-2 border-dashed p-8 text-center flex flex-col gap-4">
       <span>Or generate a template:</span>
       <div className="flex justify-center gap-2">
-        <button onClick={() => generate('demo')} className="px-3 py-2 bg-indigo-600 text-white rounded">Demo</button>
+        <button onClick={() => generate('personal')} className="px-3 py-2 bg-indigo-600 text-white rounded">Personal</button>
+        <button onClick={() => generate('organization')} className="px-3 py-2 bg-indigo-600 text-white rounded">Organization</button>
       </div>
     </div>
   )

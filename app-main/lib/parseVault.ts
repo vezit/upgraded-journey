@@ -30,34 +30,6 @@ export const parseVault = (vault: any) => {
         username: item.login?.username,
       },
     })
-
-    ;(item.login?.uris || []).forEach((u: any, i: number) => {
-      try {
-        const url = new URL(u.uri)
-        const domain = url.hostname.replace(/^www\./, '')
-        const emailKey = item.login?.username?.includes('@') ? item.login.username : undefined
-        if (emailKey) {
-          const emailId = `email-${emailKey}`
-          if (!nodes.find(n => n.id === emailId))
-            nodes.push({
-              id: emailId,
-              position: { x: Math.random() * 600, y: Math.random() * 400 },
-              data: { label: emailKey },
-              type: 'default',
-            })
-          edges.push({ id: `e-${itemId}-${emailId}-${i}`, source: itemId, target: emailId })
-        }
-        const domId = `dom-${domain}`
-        if (!nodes.find(n => n.id === domId))
-          nodes.push({
-            id: domId,
-            position: { x: Math.random() * 600, y: Math.random() * 400 },
-            data: { label: domain, logoUrl: logoFor(domain) },
-            type: 'default',
-          })
-        edges.push({ id: `e-${itemId}-${domId}-${i}`, source: itemId, target: domId })
-      } catch {}
-    })
   })
 
   return { nodes, edges }

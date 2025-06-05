@@ -27,6 +27,15 @@ export default function Vault() {
         </>
       )}
       <VaultDiagram />
+      <button
+        onClick={() => {
+          clearVault()
+          setGraph({ nodes: [], edges: [] })
+        }}
+        className="self-start px-4 py-2 bg-red-500 text-white rounded"
+      >
+        Delete Vault Data
+      </button>
     </div>
   )
 }

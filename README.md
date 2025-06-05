@@ -37,6 +37,10 @@ The recovered items would reference the recovering identifier:
 {"recovered_by": ["gmail-1863"]}
 ```
 
+Items flagged as recovery methods can also use these mappings. This allows a recovery
+method to depend on another recovery method or require additional two-factor
+providers.
+
 Keeping the value structured allows the application to automatically create edges between items when parsing the vault.
 
 ## Setup
@@ -48,4 +52,8 @@ Open the vault page and you will see a chat panel next to the diagram. Enter you
 To enable Google Analytics, copy `app-main/.env.local.example` to `app-main/.env.local` and set `NEXT_PUBLIC_GA_ID` to your measurement ID.
 
 The app is currently in an alpha stage. A small red **ALPHA** banner appears in the top-right corner of every page as a reminder.
+
+## Version History
+
+Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.
 

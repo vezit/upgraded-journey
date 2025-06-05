@@ -31,6 +31,7 @@ export const parseVault = (vault: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)
+    const isRecovery = item.fields?.some((f:any)=>f.name==='recovery_node' && String(f.value).toLowerCase()==='true')
 
     nameToId[item.name] = itemId
 
@@ -42,47 +43,28 @@ export const parseVault = (vault: any) => {
         label: item.name,
         logoUrl: logoFor(dom),
         username: item.login?.username,
+        isRecovery,
       },
     })
   })
 
-  const added = new Set<string>()
 
-  vault.items.forEach((item: any) => {
-    const itemId = nameToId[item.name]
-    const field = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')
-    if (!field || typeof field.value !== 'string') return
-    try {
-      const data = JSON.parse(field.value)
-      if (Array.isArray(data.recovers)) {
-        data.recovers.forEach((t: string) => {
-          const targetId = nameToId[t]
-          if (targetId) {
-            const id = `edge-${itemId}-${targetId}`
-            if (!added.has(id)) {
-              edges.push({ id, source: itemId, target: targetId })
-              added.add(id)
-            }
-          }
+  vault.items.forEach((item:any)=>{
+    const source = `item-${item.id}`
+    item.fields?.forEach((f:any)=>{
+      if(f.name==='recovery' && f.value){
+        const target = `item-${f.value}`
+        edges.push({
+          id:`edge-${source}-${target}`,
+          source,
+          target,
+          style:{ stroke:'#8b5cf6' },
         })
       }
-      if (Array.isArray(data.recovered_by)) {
-        data.recovered_by.forEach((s: string) => {
-          const sourceId = nameToId[s]
-          if (sourceId) {
-            const id = `edge-${sourceId}-${itemId}`
-            if (!added.has(id)) {
-              edges.push({ id, source: sourceId, target: itemId })
-              added.add(id)
-            }
-          }
-        })
-      }
-    } catch (err) {
-      // ignore parse errors
-    }
+    })
   })
 
   return { nodes, edges }
 }
+
 export type VaultGraph = ReturnType<typeof parseVault>

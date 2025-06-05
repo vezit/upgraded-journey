@@ -19,6 +19,9 @@ export default function VaultNode({ data }: NodeProps) {
       <span className="text-[11px] text-slate-500 break-all text-center">
         {data.username}
       </span>
+      {data.isRecovery && (
+        <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
+      )}
 
       {/* handles */}
       <Handle type="target" position={Position.Top} />

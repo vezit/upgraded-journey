@@ -252,10 +252,17 @@ export const parseVault = (vault: any) => {
     const maxY = Math.max(...children.map((n) => n.position.y))
 
     const pad = 40
-    const pos = { x: minX - pad, y: minY - pad }
+    let pos = { x: minX - pad, y: minY - pad }
     const width = maxX - minX + stepX + pad * 2
     const height = maxY - minY + stepY + pad * 2
     const groupId = `folder-${fid}`
+
+    const siblings = Object.values(groupNodes).filter(g => (g as any).parentNode === (def.parentId ? `folder-${def.parentId}` : undefined))
+    const rectsOverlap = (a:{x:number,y:number,width:number,height:number}, b:{x:number,y:number,width:number,height:number}) =>
+      a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
+    while (siblings.some(g => rectsOverlap({x:pos.x,y:pos.y,width,height}, {x:g.position.x,y:g.position.y,width:(g.style as any)?.width || 0,height:(g.style as any)?.height || 0}))) {
+      pos.y += height + margin
+    }
 
     children.forEach((n) => {
       n.position.x -= pos.x
@@ -276,7 +283,6 @@ export const parseVault = (vault: any) => {
         border: '1px dashed #94a3b8',
         background: '#f8fafc',
         zIndex: -1,
-        pointerEvents: 'none',
       },
       ...(def.parentId
         ? { parentNode: `folder-${def.parentId}`, extent: 'parent' }

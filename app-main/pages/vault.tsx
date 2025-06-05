@@ -2,6 +2,7 @@ import UploadZone from '@/components/UploadZone'
 import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
 import ExportButton from '@/components/ExportButton'
+import TemplateZone from '@/components/TemplateZone'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
@@ -22,7 +23,10 @@ export default function Vault() {
       {vault ? (
         <DeleteZone />
       ) : (
-        <UploadZone onLoad={handleLoad} />
+        <>
+          <UploadZone onLoad={handleLoad} />
+          <TemplateZone onGenerate={handleLoad} />
+        </>
       )}
       {vault && <ExportButton />}
       <VaultDiagram />

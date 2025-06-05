@@ -41,7 +41,7 @@ export default function VaultNode({ id, data }: NodeProps) {
       {data.isRecovery && (
         <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
       )}
-      {!data.isRecovery && data.has2fa && (
+      {data.has2fa && (
         <span className="text-xs font-semibold text-sky-600">2FA Enabled</span>
       )}
 

@@ -25,6 +25,7 @@ const domainFrom = (raw?: string) => {
 export default function VaultItemList({ onEdit, onClose }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
+  const [hidden, setHidden] = useState<number[]>([])
   const { hoveredId, setHoveredId } = useHoverStore()
 
 
@@ -44,17 +45,32 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
     )
   }
 
+  const hideSelected = () => {
+    setHidden(prev => Array.from(new Set([...prev, ...selected])))
+    setSelected([])
+  }
+
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
-      {onClose && (
-        <div className="flex justify-end p-1">
-          <button
-            onClick={onClose}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
+      {(onClose || selected.length > 0) && (
+        <div className="flex justify-between items-center p-1">
+          {selected.length > 0 && (
+            <button
+              onClick={hideSelected}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Hide Selected
+            </button>
+          )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </button>
+          )}
         </div>
       )}
 
@@ -69,7 +85,9 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
           </tr>
         </thead>
         <tbody>
-          {vault.items.map((item: any, index: number) => {
+          {vault.items
+            .filter((_: any, index: number) => !hidden.includes(index))
+            .map((item: any, index: number) => {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`

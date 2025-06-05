@@ -288,10 +288,9 @@ export default function EditItemModal({ index, onClose }: Props) {
             Recovery Method
           </label>
         </div>
-        {!isRecovery && (
-          <div className="space-y-2">
-            <div>
-              <label className="block text-sm font-medium mb-1">Recovery Items</label>
+        <div className="space-y-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Recovery Items</label>
               {recoveredBy.map((slug) => (
                 <div key={slug} className="flex items-center gap-2 mb-1">
                   <span className="flex-1 text-sm">{nameForSlug(slug)}</span>
@@ -352,7 +351,6 @@ export default function EditItemModal({ index, onClose }: Props) {
               </div>
             </div>
           </div>
-        )}
         <div>
           <label className="block text-sm font-medium mb-2">Custom Fields</label>
             <div className="flex items-center space-x-2 mb-2">

@@ -105,6 +105,7 @@ export default function ChatInterface({ onClose }: Props) {
   }
 
 const FUNCTIONS = [
+
     {
       type: 'function',
       function: {

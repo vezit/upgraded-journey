@@ -12,6 +12,7 @@ import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
+import { useHiddenStore } from '@/contexts/HiddenStore'
 
 export default function Vault() {
   const { setGraph } = useGraph()
@@ -24,9 +25,12 @@ export default function Vault() {
   const [showHistory, setShowHistory] = useState(false)
 
 
+  const { clear } = useHiddenStore()
+
   const handleLoad = (data: any) => {
     setVault(data)
     setGraph(parseVault(data))
+    clear()
     storage.saveVault(JSON.stringify(data))
   }
 

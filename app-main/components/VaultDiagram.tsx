@@ -3,7 +3,6 @@ import React, { useCallback, useState, useEffect, useRef } from 'react'
 import ReactFlow, {
   Background,
   Controls,
-  MiniMap,
   ReactFlowProvider,
   applyNodeChanges,
   addEdge,
@@ -126,7 +125,6 @@ function DiagramContent() {
         fitView
       >
         <Background />
-        <MiniMap pannable />
         <Controls showInteractive />
       </ReactFlow>
       {/* Legend --------------------------------------------------------- */}

@@ -1,6 +1,28 @@
 'use client'
 import { create } from 'zustand'
 
+// ---------------------------------------------------------------------------
+// Helper to guess a domain from a service name
+// ---------------------------------------------------------------------------
+const SERVICE_DOMAINS: Record<string, string> = {
+  instagram: 'instagram.com',
+  facebook: 'facebook.com',
+  gmail: 'gmail.com',
+  google: 'google.com',
+  linkedin: 'linkedin.com',
+  netflix: 'netflix.com',
+  twitter: 'twitter.com',
+}
+
+const guessDomainFromName = (name?: string): string | null => {
+  if (!name) return null
+  const key = name.trim().toLowerCase()
+  if (SERVICE_DOMAINS[key]) return SERVICE_DOMAINS[key]
+  const sanitized = key.replace(/[^a-z0-9]/g, '')
+  if (sanitized.length < 3) return null
+  return `${sanitized}.com`
+}
+
 interface VaultState {
   vault: any | null
   setVault: (v: any) => void
@@ -179,7 +201,9 @@ export const useVault = create<VaultState>((set, get) => ({
     if (itemData.username) item.login.username = itemData.username
     if (itemData.password) item.login.password = itemData.password
     if (itemData.totp) item.login.totp = itemData.totp
-    if (itemData.uri) item.login.uris = [{ uri: itemData.uri, match: null }]
+    const uriGuess = itemData.uri || `https://${guessDomainFromName(itemData.name) || ''}`
+    if (uriGuess && uriGuess !== 'https://')
+      item.login.uris = [{ uri: uriGuess, match: null }]
     if (itemData.notes) item.notes = itemData.notes
     if (itemData.isRecovery)
       item.fields.push({ name: 'recovery_node', value: 'true', type: 0 })

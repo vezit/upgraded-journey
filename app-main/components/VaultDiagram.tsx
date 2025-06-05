@@ -17,6 +17,7 @@ import 'reactflow/dist/style.css'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
+import { useLockedStore } from '@/contexts/LockedStore'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
@@ -30,6 +31,7 @@ const nodeTypes = { vault: VaultNode, group: GroupNode }
 function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()
   const { hidden } = useHiddenStore()
+  const { locked } = useLockedStore()
   const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
@@ -52,6 +54,7 @@ function DiagramContent() {
   const openMenu = (e: React.MouseEvent, n: Node) => {
     e.preventDefault()
     e.stopPropagation()
+    if(locked.includes(n.id)) return
     if(!isInteractive){
       handleEdit(n.id)
       return
@@ -75,7 +78,7 @@ function DiagramContent() {
       if(isInteractive){
         const map = { ...positionsRef.current }
         changes.forEach(c=>{
-          if(c.type==='position' && (c as any).position){
+          if(c.type==='position' && (c as any).position && !locked.includes(c.id)){
             map[c.id] = (c as any).position
           }
         })
@@ -84,7 +87,7 @@ function DiagramContent() {
       }
       setGraph({ nodes: updated, edges })
     },
-    [setGraph, nodes, edges, isInteractive]
+    [setGraph, nodes, edges, isInteractive, locked]
   )
 
   const onConnect = useCallback(
@@ -109,7 +112,13 @@ function DiagramContent() {
     [nodes, edges, setGraph, vault, addRecovery]
   )
 
-  const visibleNodes = nodes.filter(n => !hidden.includes(n.id))
+  const nodesWithLock = nodes.map(n =>
+    locked.includes(n.id)
+      ? { ...n, draggable: false, connectable: false, selectable: false }
+      : { ...n, draggable: true, connectable: true, selectable: true }
+  )
+
+  const visibleNodes = nodesWithLock.filter(n => !hidden.includes(n.id))
   const visibleEdges = edges.filter(e => !hidden.includes(e.source) && !hidden.includes(e.target))
 
   return (

@@ -16,6 +16,7 @@ export default function Vault() {
   const { setGraph } = useGraph()
   const { vault, setVault } = useVault()
   const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const [showList, setShowList] = useState(true)
   const [showChat, setShowChat] = useState(true)
@@ -44,6 +45,7 @@ export default function Vault() {
           <VaultItemList
             onEdit={(i) => setEditIndex(i)}
             onClose={() => setShowList(false)}
+            onCreate={() => setCreating(true)}
           />
         )}
         <VaultDiagram />
@@ -52,6 +54,7 @@ export default function Vault() {
       {editIndex !== null && (
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
       )}
+      {creating && <EditItemModal onClose={() => setCreating(false)} />}
     </div>
   )
 }

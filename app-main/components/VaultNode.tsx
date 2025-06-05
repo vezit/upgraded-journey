@@ -1,6 +1,6 @@
 'use client'
 import { Handle, NodeProps, Position } from 'reactflow'
-import Image from 'next/image'
+
 import { useHoverStore } from '@/contexts/HoverStore'
 
 export default function VaultNode({ id, data }: NodeProps) {
@@ -13,22 +13,24 @@ export default function VaultNode({ id, data }: NodeProps) {
       onMouseLeave={() => setHoveredId(null)}
     >
       <div className="relative">
-        <Image
+        <img
           width={40}
           height={40}
           src={data.logoUrl}
           alt={data.label}
           className="rounded-lg shrink-0"
           onError={(e) => ((e.target as HTMLImageElement).src = '/img/default.svg')}
+          loading="lazy"
         />
         {data.nestedLogoUrl && (
-          <Image
+          <img
             width={16}
             height={16}
             src={data.nestedLogoUrl}
             alt="nested"
             className="absolute bottom-0 right-0 rounded-full border bg-white"
             onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+            loading="lazy"
           />
         )}
       </div>

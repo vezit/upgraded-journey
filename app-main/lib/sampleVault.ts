@@ -26,8 +26,8 @@ const templates: Record<TemplateName, VaultData> = {
         type: 1,
         name: 'Facebook',
         login: {
-          username: 'test@reipur.dk',
-          password: 'LEhWnF75hP50CX',
+          username: 'john.doe@example.com',
+          password: '',
           uris: [{ uri: 'https://facebook.com', match: null }],
         },
         fields: [
@@ -41,8 +41,8 @@ const templates: Record<TemplateName, VaultData> = {
         type: 1,
         name: 'Gmail',
         login: {
-          username: 'victor@reipur.dk',
-          password: 'INWkgD5Fj4xXRX',
+          username: 'john.doe@example.com',
+          password: '',
           uris: [{ uri: 'https://gmail.com', match: null }],
         },
         fields: [
@@ -56,8 +56,8 @@ const templates: Record<TemplateName, VaultData> = {
         type: 1,
         name: 'LinkedIn',
         login: {
-          username: 'test@reipur.dk',
-          password: 'LEhWnF75hP50CX',
+          username: 'john.doe@example.com',
+          password: '',
           uris: [{ uri: 'https://linkedin.com', match: null }],
         },
         fields: [
@@ -71,8 +71,8 @@ const templates: Record<TemplateName, VaultData> = {
         type: 1,
         name: 'Netflix',
         login: {
-          username: 'test@reipur.dk',
-          password: 'LEhWnF75hP50CX',
+          username: 'john.doe@example.com',
+          password: '',
           uris: [{ uri: 'https://netflix.com', match: null }],
         },
         fields: [
@@ -98,9 +98,9 @@ const templates: Record<TemplateName, VaultData> = {
       {
         id: '01c1349c-35c0-4c54-ae82-42df42a5786b',
         type: 1,
-        name: '+45 26129604',
+        name: '+45 12345678',
         login: {
-          uris: [{ uri: 'tel:+4526129604', match: null }],
+          uris: [{ uri: 'tel:+4512345678', match: null }],
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'sms-9604', type: 0 },
@@ -114,9 +114,9 @@ const templates: Record<TemplateName, VaultData> = {
         type: 1,
         name: 'Vaultwarden Dev',
         login: {
-          username: 'victor@reipur.dk',
-          password: 'Disarray8-Unified-Abdomen',
-          uris: [{ uri: 'https://vault.reipur.dk', match: null }],
+          username: 'john.doe@example.com',
+          password: '',
+          uris: [{ uri: 'https://vault.example.com', match: null }],
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },

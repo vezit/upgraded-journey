@@ -1,16 +1,8 @@
 import type { Edge, Node } from 'reactflow'
 
 // quick helper ---------------------------------------------------------------
-const domainFrom = (raw: string | undefined) => {
-  if (!raw) return undefined
-  try {
-    return new URL(raw).hostname.replace(/^www\./, '')
-  } catch {
-    // Bitwarden exports may contain bare domains without a scheme.
-    // Skip invalid URLs rather than throwing so imports don't fail.
-    return undefined
-  }
-}
+const domainFrom = (raw: string | undefined) =>
+  raw ? new URL(raw).hostname.replace(/^www\./, '') : undefined
 
 const logoFor = (domain?: string) =>
   domain ? `https://logo.clearbit.com/${domain}` : '/img/default.svg'

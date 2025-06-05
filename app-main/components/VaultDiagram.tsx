@@ -12,7 +12,7 @@ import 'reactflow/dist/style.css'
 
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
-import ItemModal from './ItemModal'
+import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
 
 const nodeTypes = { vault: VaultNode }
@@ -77,7 +77,7 @@ export default function VaultDiagram() {
         </ul>
       )}
       {editIndex!==null && (
-        <ItemModal index={editIndex} onClose={()=>setEditIndex(null)} />
+        <EditItemModal index={editIndex} onClose={()=>setEditIndex(null)} />
       )}
     </div>
   )

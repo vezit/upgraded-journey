@@ -2,13 +2,16 @@
 import { Handle, NodeProps, Position } from 'reactflow'
 
 import { useHoverStore } from '@/contexts/HoverStore'
+import { useLostStore } from '@/contexts/LostStore'
 
 export default function VaultNode({ id, data }: NodeProps) {
   const { hoveredId, setHoveredId } = useHoverStore()
+  const { lost } = useLostStore()
   const highlighted = hoveredId === id
+  const isLost = lost.includes(id)
   return (
     <div
-      className={`flex flex-col items-center gap-1 p-3 rounded-2xl shadow bg-white/90 backdrop-blur max-w-[9rem] ${highlighted ? 'ring-2 ring-indigo-500' : ''}`}
+      className={`flex flex-col items-center gap-1 p-3 rounded-2xl shadow bg-white/90 backdrop-blur max-w-[9rem] ${highlighted ? 'ring-2 ring-indigo-500' : ''} ${isLost ? 'border-2 border-red-500 opacity-60' : ''}`}
       onMouseEnter={() => setHoveredId(id)}
       onMouseLeave={() => setHoveredId(null)}
     >

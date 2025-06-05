@@ -1,6 +1,8 @@
 import type { Edge, Node } from 'reactflow'
 
-// quick helper ---------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Helper utilities
+// ---------------------------------------------------------------------------
 const domainFrom = (raw: string | undefined) => {
   if (!raw) return undefined
   try {
@@ -18,16 +20,20 @@ const logoFor = (domain?: string) =>
   domain ? `https://logo.clearbit.com/${domain}` : '/img/default.svg'
 
 // ---------------------------------------------------------------------------
-// Nothing else changes – we just add `type`, `logoUrl` and a random position.
+// parseVault – converts a Bitwarden export into nodes + edges for React Flow
+// ---------------------------------------------------------------------------
 export const parseVault = (vault: any) => {
   const nodes: Node[] = []
   const edges: Edge[] = []
 
   if (!vault?.items) return { nodes, edges }
 
-  const { width, height } = (() => {
-    if (typeof window === 'undefined') return { width: 600, height: 400 }
-    return { width: window.innerWidth, height: window.innerHeight * 0.8 }
+  // -------------------------------------------------------------------------
+  // Basic grid positioning – we’ll tweak recovery‑nodes later on
+  // -------------------------------------------------------------------------
+  const { width } = (() => {
+    if (typeof window === 'undefined') return { width: 600 }
+    return { width: window.innerWidth }
   })()
 
   const margin = 40
@@ -37,19 +43,14 @@ export const parseVault = (vault: any) => {
   let col = 0
   let row = 0
 
-  const nameToId: Record<string, string> = {}
-
   vault.items.forEach((item: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)
-    const isRecovery = item.fields?.some(
-      (f: any) =>
-        f.name === 'recovery_node' &&
-        String(f.value).toLowerCase() === 'true'
-    )
 
-    nameToId[item.name] = itemId
+    const isRecovery = item.fields?.some(
+      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+    )
 
     const x = margin + col * stepX
     const y = margin + row * stepY
@@ -61,7 +62,7 @@ export const parseVault = (vault: any) => {
 
     nodes.push({
       id: itemId,
-      type: 'vault', //  <-- custom node
+      type: 'vault',
       position: { x, y },
       data: {
         label: item.name,
@@ -72,35 +73,48 @@ export const parseVault = (vault: any) => {
     })
   })
 
-
-  vault.items.forEach((item:any)=>{
+  // -------------------------------------------------------------------------
+  // Create recovery edges (source ➜ target)
+  // -------------------------------------------------------------------------
+  vault.items.forEach((item: any) => {
     const source = `item-${item.id}`
-    item.fields?.forEach((f:any)=>{
-      if(f.name==='recovery' && f.value){
+    item.fields?.forEach((f: any) => {
+      if (f.name === 'recovery' && f.value) {
         const target = `item-${f.value}`
         edges.push({
-          id:`edge-${source}-${target}`,
+          id: `edge-${source}-${target}`,
           source,
           target,
-          style:{ stroke:'#8b5cf6' },
+          style: { stroke: '#8b5cf6' },
         })
       }
     })
   })
 
+  // -------------------------------------------------------------------------
+  // SECOND‑PASS LAYOUT TWEAK -------------------------------------------------
+  // We want every *recovery node* to sit **below** the accounts it can recover
+  // (as per the demo’s desired appearance).
+  // -------------------------------------------------------------------------
   const nodeMap: Record<string, Node> = {}
-  nodes.forEach(n => (nodeMap[n.id] = n))
+  nodes.forEach((n) => (nodeMap[n.id] = n))
 
-  nodes.forEach(n => {
+  nodes.forEach((n) => {
     if (!n.data?.isRecovery) return
-    const related = edges.filter(e => e.target === n.id)
-    if (!related.length) return
-    const xs = related.map(e => nodeMap[e.source]?.position.x || 0)
-    const ys = related.map(e => nodeMap[e.source]?.position.y || 0)
+
+    // Who points at me?
+    const incoming = edges.filter((e) => e.target === n.id)
+    if (!incoming.length) return
+
+    const xs = incoming.map((e) => nodeMap[e.source]?.position.x || 0)
+    const ys = incoming.map((e) => nodeMap[e.source]?.position.y || 0)
+
     const avgX = xs.reduce((a, b) => a + b, 0) / xs.length
-    const minY = Math.min(...ys)
+    const maxY = Math.max(...ys)
+
+    // Re‑centre horizontally and push one row **below** dependants
     n.position.x = avgX
-    n.position.y = minY - stepY
+    n.position.y = maxY + stepY
   })
 
   return { nodes, edges }

@@ -9,6 +9,7 @@ export default function DeleteZone(){
   const onDelete = () => {
     if(confirm('Delete uploaded vault data?')){
       storage.clearVault()
+      storage.clearHistory()
       setVault(null)
       setGraph({ nodes: [], edges: [] })
     }

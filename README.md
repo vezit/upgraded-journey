@@ -41,7 +41,12 @@ Items flagged as recovery methods can also use these mappings. This allows a rec
 method to depend on another recovery method or require additional two-factor
 providers.
 
+
 Keeping the value structured allows the application to automatically create edges between items when parsing the vault.
+
+## Lost Access Simulation
+
+Right-click any node in the diagram and choose **Lost Access** to simulate losing it. The node becomes red and semi-transparent. The modal lists recovery methods and, when the lost item is a 2FA provider, all services that rely on it. Collect the recovery codes for those services and store them in a separate vault such as [2favault.reipur.dk](https://2favault.reipur.dk) before you actually lose access.
 
 ## Setup
 

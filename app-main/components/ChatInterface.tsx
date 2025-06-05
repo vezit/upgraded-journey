@@ -24,9 +24,14 @@ Always begin by asking whether the user has a Bitwarden or Vaultwarden account. 
 
 When the user provides the name of a service and an email address, automatically use the create_item function to add it to the vault before continuing the conversation.
 
+If no URL is specified for the service, infer a sensible default from the name
+(for example "instagram.com" for "Instagram").
+
 Each item has a custom field “vaultdiagram-id” that uniquely identifies it. Relationships are stored in two JSON based fields:
   • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
   • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
+
+Inform the user that nodes can be marked as lost using the “Lost Access” option. When something like a phone providing 2FA is lost, help identify which services are affected and remind the user to store their 2FA recovery codes in a separate vault such as https://2favault.reipur.dk.
 
 When helping the user, explain how to create or edit these fields so the application can automatically create edges between items. Never request or store passwords or other sensitive secrets.`
 
@@ -221,6 +226,16 @@ const FUNCTIONS = [
             setVault(updated)
             updateGraph(updated)
           }
+          const gmailItem = updated?.items?.find((i: any) =>
+            /gmail/i.test(i.name),
+          )
+          const follow = gmailItem
+            ? ` Is \"${gmailItem.name}\" the recovery for ${data.name}?`
+            : ` Do you want to add a recovery method for ${data.name}?`
+          setMessages((m) => [
+            ...m,
+            { role: 'assistant', content: `Item \"${data.name}\" added.` + follow },
+          ])
         } else if (name === 'edit_item') {
           const value =
             data.field === 'password' && !data.value && lastPassword.current

@@ -7,7 +7,7 @@ import VersionHistoryModal from '@/components/VersionHistoryModal'
 import TemplateZone from '@/components/TemplateZone'
 import VaultItemList from '@/components/VaultItemList'
 import EditItemModal from '@/components/EditItemModal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
@@ -23,16 +23,23 @@ export default function Vault() {
   const [showList, setShowList] = useState(true)
   const [showChat, setShowChat] = useState(true)
   const [showHistory, setShowHistory] = useState(false)
+  const [shrinkGroups, setShrinkGroups] = useState(false)
 
 
   const { clear } = useHiddenStore()
 
   const handleLoad = (data: any) => {
     setVault(data)
-    setGraph(parseVault(data))
+    setGraph(parseVault(data, shrinkGroups))
     clear()
     storage.saveVault(JSON.stringify(data))
   }
+
+  useEffect(() => {
+    if (vault) {
+      setGraph(parseVault(vault, shrinkGroups))
+    }
+  }, [shrinkGroups])
 
   return (
     <div className="p-4 flex flex-col gap-4 mx-auto px-6">
@@ -53,6 +60,14 @@ export default function Vault() {
           >
             Version History
           </button>
+          <label className="flex items-center gap-1 text-sm">
+            <input
+              type="checkbox"
+              checked={shrinkGroups}
+              onChange={e => setShrinkGroups(e.target.checked)}
+            />
+            Shrink Categories
+          </label>
         </div>
       )}
       <div className="flex flex-col md:flex-row gap-4">

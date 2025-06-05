@@ -23,7 +23,7 @@ const logoFor = (domain?: string) =>
 // ---------------------------------------------------------------------------
 // parseVault – converts a Bitwarden export into nodes + edges for React Flow
 // ---------------------------------------------------------------------------
-export const parseVault = (vault: any) => {
+export const parseVault = (vault: any, shrinkGroups = false) => {
   const nodes: Node[] = []
   const edges: Edge[] = []
 
@@ -251,10 +251,10 @@ export const parseVault = (vault: any) => {
     const maxX = Math.max(...children.map((n) => n.position.x))
     const maxY = Math.max(...children.map((n) => n.position.y))
 
-    const pad = 40
+    const pad = shrinkGroups ? 10 : 40
     let pos = { x: minX - pad, y: minY - pad }
-    const width = maxX - minX + stepX + pad * 2
-    const height = maxY - minY + stepY + pad * 2
+    let width = maxX - minX + stepX + (shrinkGroups ? 0 : pad * 2)
+    let height = maxY - minY + stepY + (shrinkGroups ? 0 : pad * 2)
     const groupId = `folder-${fid}`
 
     const siblings = Object.values(groupNodes).filter(g => (g as any).parentNode === (def.parentId ? `folder-${def.parentId}` : undefined))
@@ -264,11 +264,19 @@ export const parseVault = (vault: any) => {
       pos.y += height + margin
     }
 
+    const offsetAbove = fid === '2favault.reipur.dk' ? height + margin : 0
+    pos.y -= offsetAbove
+    if (offsetAbove) {
+      children.forEach(n => {
+        n.position.y -= offsetAbove
+      })
+    }
+
     children.forEach((n) => {
       n.position.x -= pos.x
       n.position.y -= pos.y
       ;(n as any).parentNode = groupId
-      ;(n as any).extent = 'parent'
+      if(!shrinkGroups) (n as any).extent = 'parent'
     })
 
     const groupNode: Node = {

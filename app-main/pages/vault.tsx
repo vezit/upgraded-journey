@@ -28,7 +28,7 @@ export default function Vault() {
   }
 
   return (
-    <div className="p-4 flex flex-col gap-4 mx-auto max-w-7xl px-6">
+    <div className="p-4 flex flex-col gap-4 mx-auto px-6">
       {vault ? (
         <DeleteZone />
       ) : (

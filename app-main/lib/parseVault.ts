@@ -49,8 +49,20 @@ export const parseVault = (vault: any) => {
 
   // -------------------------------------------------------------------------
   // Pass 1: create all nodes and collect slugs
+  // Recovery methods appear first so they get placed in the top rows
   // -------------------------------------------------------------------------
-  vault.items.forEach((item: any) => {
+  const itemsSorted = [...vault.items].sort((a: any, b: any) => {
+    const aRec = a.fields?.some(
+      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+    )
+    const bRec = b.fields?.some(
+      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+    )
+    if (aRec === bRec) return 0
+    return aRec ? -1 : 1
+  })
+
+  itemsSorted.forEach((item: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)

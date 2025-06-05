@@ -54,6 +54,21 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     setSelected([])
   }
 
+  // sort indexes so recovery methods appear first in the list
+  const orderedIndexes = vault.items
+    .map((item: any, idx: number) => ({ item, idx }))
+    .sort((a, b) => {
+      const aRec = a.item.fields?.some(
+        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+      )
+      const bRec = b.item.fields?.some(
+        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+      )
+      if (aRec === bRec) return 0
+      return aRec ? -1 : 1
+    })
+    .map((o) => o.idx)
+
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
@@ -91,9 +106,10 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           </tr>
         </thead>
         <tbody>
-          {vault.items
-            .filter((_: any, index: number) => !hidden.includes(index))
-            .map((item: any, index: number) => {
+          {orderedIndexes
+            .filter((index: number) => !hidden.includes(index))
+            .map((index: number) => {
+            const item = vault.items[index]
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`

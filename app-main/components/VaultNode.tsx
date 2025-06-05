@@ -5,14 +5,26 @@ import Image from 'next/image'
 export default function VaultNode({ data }: NodeProps) {
   return (
     <div className="flex flex-col items-center gap-1 p-3 rounded-2xl shadow bg-white/90 backdrop-blur max-w-[9rem]">
-      <Image
-        width={40}
-        height={40}
-        src={data.logoUrl}
-        alt={data.label}
-        className="rounded-lg shrink-0"
-        onError={(e) => ((e.target as HTMLImageElement).src = '/img/default.svg')}
-      />
+      <div className="relative">
+        <Image
+          width={40}
+          height={40}
+          src={data.logoUrl}
+          alt={data.label}
+          className="rounded-lg shrink-0"
+          onError={(e) => ((e.target as HTMLImageElement).src = '/img/default.svg')}
+        />
+        {data.nestedLogoUrl && (
+          <Image
+            width={16}
+            height={16}
+            src={data.nestedLogoUrl}
+            alt="nested"
+            className="absolute bottom-0 right-0 rounded-full border bg-white"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          />
+        )}
+      </div>
       <span className="text-sm font-semibold text-slate-800 text-center">
         {data.label}
       </span>

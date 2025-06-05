@@ -47,7 +47,7 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'gmail-1863', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["facebook-c3fb","linkedin-7845","netflix-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["facebook-c3fb","linkedin-7845","netflix-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11","sms-9604"]}', type: 0 },
         ],
       },
       {
@@ -88,8 +88,23 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'phone-pixel-7a-2b11', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: '/img/phone.svg', type: 0 },
+          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovers":["gmail-1863"]}', type: 0 },
-          { name: 'phone number', value: '004526129604', type: 0 },
+        ],
+      },
+      {
+        id: '01c1349c-35c0-4c54-ae82-42df42a5786b',
+        type: 1,
+        name: '+45 26129604',
+        login: {
+          uris: [{ uri: 'tel:+4526129604', match: null }],
+        },
+        fields: [
+          { name: 'vaultdiagram-id', value: 'sms-9604', type: 0 },
+          { name: 'recovery_node', value: 'true', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: '/img/phone.svg', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["gmail-1863"]}', type: 0 },
         ],
       },
       {

@@ -20,8 +20,8 @@ import VaultNode from './VaultNode'
 const nodeTypes = { vault: VaultNode }
 
 export default function VaultDiagram() {
-  const { nodes, edges, setGraph } = useGraph()
-  const { vault } = useVault()
+  const { nodes, edges, setGraph, addEdge } = useGraph()
+  const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
@@ -67,6 +67,7 @@ export default function VaultDiagram() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onConnect={onConnect}
         onNodesChange={onNodesChange}
         onConnect={onConnect}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {

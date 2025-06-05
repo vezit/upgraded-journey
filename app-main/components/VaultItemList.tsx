@@ -5,7 +5,7 @@ import { useVault } from '@/contexts/VaultStore'
 import { useHoverStore } from '@/contexts/HoverStore'
 import { EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/24/solid'
 
-type Props = { onEdit: (index: number) => void; onClose?: () => void }
+type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
 
 
 const domainFrom = (raw?: string) => {
@@ -22,7 +22,7 @@ const domainFrom = (raw?: string) => {
 }
 
 
-export default function VaultItemList({ onEdit, onClose }: Props) {
+export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const [hidden, setHidden] = useState<number[]>([])
@@ -53,6 +53,7 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
+
       <div className="flex justify-between items-center p-1">
         <button
           onClick={hideSelected}
@@ -75,6 +76,7 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
         )}
       </div>
 
+
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
@@ -92,6 +94,9 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+            const isRecovery = item.fields?.some(
+              (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+            )
 
             const rowId = `item-${item.id}`
             const highlighted = hoveredId === rowId
@@ -123,6 +128,9 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
+                    {isRecovery && (
+                      <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
+                    )}
                   </div>
                 </td>
                 <td className="text-right px-4">

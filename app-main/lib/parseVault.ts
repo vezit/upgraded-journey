@@ -24,7 +24,11 @@ export const parseVault = (vault: any) => {
       id: itemId,
       type: 'vault', //  <-- custom node
       position: { x: Math.random() * 600, y: Math.random() * 400 },
-      data: { label: item.name, logoUrl: logoFor(dom) },
+      data: {
+        label: item.name,
+        logoUrl: logoFor(dom),
+        username: item.login?.username,
+      },
     })
 
     ;(item.login?.uris || []).forEach((u: any, i: number) => {

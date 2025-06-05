@@ -4,6 +4,7 @@ import ReactFlow, {
   Background,
   Controls,
   MiniMap,
+  ReactFlowProvider,
   applyNodeChanges,
   addEdge,
   NodeChange,
@@ -23,7 +24,7 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 
 const nodeTypes = { vault: VaultNode }
 
-export default function VaultDiagram() {
+function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()
   const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
@@ -154,5 +155,13 @@ export default function VaultDiagram() {
         <EditItemModal index={editIndex} onClose={()=>setEditIndex(null)} />
       )}
     </div>
+  )
+}
+
+export default function VaultDiagram() {
+  return (
+    <ReactFlowProvider>
+      <DiagramContent />
+    </ReactFlowProvider>
   )
 }

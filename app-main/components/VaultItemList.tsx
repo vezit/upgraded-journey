@@ -4,11 +4,14 @@ import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
+import { useLockedStore } from '@/contexts/LockedStore'
 import {
   EllipsisVerticalIcon,
   EyeIcon,
   EyeSlashIcon,
   PlusIcon,
+  LockClosedIcon,
+  LockOpenIcon,
 } from '@heroicons/react/24/solid'
 
 type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
@@ -36,6 +39,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
 
   const { hoveredId, setHoveredId } = useHoverStore()
   const { hidden, hide, unhide } = useHiddenStore()
+  const { locked, lock, unlock } = useLockedStore()
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -81,6 +85,11 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleVisibility = (id: string) => {
     if (hidden.includes(id)) unhide([id])
     else hide([id])
+  }
+
+  const toggleLock = (id: string) => {
+    if (locked.includes(id)) unlock([id])
+    else lock([id])
   }
 
   // sort indexes so recovery methods appear first in the list
@@ -234,6 +243,19 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                       <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                     ) : (
                       <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      toggleLock(rowId)
+                    }}
+                    className="mr-2"
+                  >
+                    {locked.includes(rowId) ? (
+                      <LockClosedIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                     )}
                   </button>
                   <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 inline" />

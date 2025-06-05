@@ -1,14 +1,34 @@
 const KEY = 'vault-data'
 const POS_KEY = 'vault-positions'
+const HISTORY_KEY = 'vault-history'
 
-export const saveVault = (raw:string)=>{
-  try{ localStorage.setItem(KEY, raw) }catch{}
+export const saveVault = (raw: string) => {
+  try {
+    localStorage.setItem(KEY, raw)
+    const histRaw = localStorage.getItem(HISTORY_KEY)
+    const hist = histRaw ? JSON.parse(histRaw) : []
+    hist.push({ timestamp: Date.now(), data: raw })
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist))
+  } catch {}
 }
 export const loadVault = ()=>{
   try{ const raw = localStorage.getItem(KEY); return raw? JSON.parse(raw):null }catch{ return null }
 }
 export const clearVault = ()=>{
   try{ localStorage.removeItem(KEY) }catch{}
+}
+
+export const loadHistory = (): { timestamp: number; data: string }[] => {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export const clearHistory = () => {
+  try { localStorage.removeItem(HISTORY_KEY) } catch {}
 }
 
 export const savePositions = (map:Record<string,{x:number,y:number}>)=>{

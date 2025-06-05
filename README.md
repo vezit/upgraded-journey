@@ -37,6 +37,10 @@ The recovered items would reference the recovering identifier:
 {"recovered_by": ["gmail-1863"]}
 ```
 
+Items flagged as recovery methods can also use these mappings. This allows a recovery
+method to depend on another recovery method or require additional two-factor
+providers.
+
 Keeping the value structured allows the application to automatically create edges between items when parsing the vault.
 
 ## Setup

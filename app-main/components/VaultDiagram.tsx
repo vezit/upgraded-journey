@@ -42,6 +42,15 @@ export default function VaultDiagram() {
     if(idx!==undefined && idx>-1) setEditIndex(idx)
   }
 
+  const openMenu = (e: React.MouseEvent, n: Node) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const rect = diagramRef.current?.getBoundingClientRect()
+    const x = rect ? e.clientX - rect.left : e.clientX
+    const y = rect ? e.clientY - rect.top : e.clientY
+    setMenu({ x, y, id: n.id })
+  }
+
   useEffect(()=>{
     const close = ()=>setMenu(null)
     document.addEventListener('click', close)
@@ -103,12 +112,8 @@ export default function VaultDiagram() {
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
-        onNodeClick={(e:React.MouseEvent, n:Node) => {
-          const rect = diagramRef.current?.getBoundingClientRect()
-          const x = rect ? e.clientX - rect.left : e.clientX
-          const y = rect ? e.clientY - rect.top : e.clientY
-          setMenu({ x, y, id: n.id })
-        }}
+        onNodeClick={openMenu}
+        onNodeContextMenu={openMenu}
         nodesDraggable={!locked}
         fitView
       >

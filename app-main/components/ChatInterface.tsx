@@ -24,6 +24,7 @@ export default function ChatInterface() {
   const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-3.5-turbo')
   const [input, setInput]     = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const [isTyping, setIsTyping] = useState(false)
 
   // ---------------------------------------------------------------------------
   // 🔄  Load stored API‑key / model on mount
@@ -70,6 +71,7 @@ export default function ChatInterface() {
     const history = [...messages, userMsg]
     setMessages(history)
     setInput('')
+    setIsTyping(true)
 
     try {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -85,6 +87,8 @@ export default function ChatInterface() {
       if (reply) setMessages((m) => [...m, { role: 'assistant', content: reply }])
     } catch (err) {
       console.error(err)
+    } finally {
+      setIsTyping(false)
     }
   }
 
@@ -159,6 +163,17 @@ export default function ChatInterface() {
             </div>
           </div>
         ))}
+        {isTyping && (
+          <div className="text-left">
+            <div className="inline-block bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+              <div className="typing-indicator">
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2">

@@ -99,7 +99,7 @@ const templates: Record<TemplateName, VaultData> = {
         login: {
           username: 'victor@reipur.dk',
           password: 'Disarray8-Unified-Abdomen',
-          uris: [{ uri: 'vault.reipur.dk', match: null }],
+          uris: [{ uri: 'https://vault.reipur.dk', match: null }],
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },

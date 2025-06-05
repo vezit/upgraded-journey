@@ -66,8 +66,6 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
-            const rowId = `item-${item.id}`
-            const highlighted = hoveredId === rowId
             return (
               <tr
                 key={item.id}
@@ -95,7 +93,6 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
-                    <div className="text-xs text-gray-500">{item.login?.username}</div>
                   </div>
                 </td>
                 <td className="text-right px-4">

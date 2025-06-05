@@ -2,19 +2,37 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
-import * as storage from '@/lib/storage'
-import { EyeIcon, EyeSlashIcon, PlusIcon, TrashIcon, StarIcon } from '@heroicons/react/24/outline'
+
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  PlusIcon,
+  TrashIcon,
+  StarIcon,
+} from '@heroicons/react/24/outline'
+
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 
-type Props = { index: number; onClose: () => void }
+type Props = { index?: number; onClose: () => void }
 
 export default function EditItemModal({ index, onClose }: Props) {
   const { vault, setVault } = useVault()
   if (!vault) return null
-  const original = vault.items?.[index]
-  if (!original) return null
 
-  const [item, setItem] = useState<any>(() => JSON.parse(JSON.stringify(original)))
+  const original =
+    index !== undefined && index > -1 ? vault.items?.[index] : null
+
+  const [item, setItem] = useState<any>(() =>
+    original
+      ? JSON.parse(JSON.stringify(original))
+      : {
+          id: (crypto as any).randomUUID(),
+          type: 1,
+          name: '',
+          login: {},
+          fields: [],
+        }
+  )
   const [showPassword, setShowPassword] = useState(false)
   const [showTotp, setShowTotp] = useState(false)
   const [newFieldType, setNewFieldType] = useState('0')
@@ -88,7 +106,11 @@ export default function EditItemModal({ index, onClose }: Props) {
 
   const handleSave = () => {
     const items = [...vault.items]
-    items[index] = item
+    if (index !== undefined && index > -1) {
+      items[index] = item
+    } else {
+      items.push(item)
+    }
     const updatedVault = { ...vault, items }
     setVault(updatedVault)
     setGraph(parseVault(updatedVault))
@@ -150,7 +172,9 @@ export default function EditItemModal({ index, onClose }: Props) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-md shadow-md w-full max-w-xl p-6" onClick={e => e.stopPropagation()}>
-        <h2 className="text-xl font-semibold mb-4">Edit Item</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {index !== undefined && index > -1 ? 'Edit Item' : 'New Item'}
+        </h2>
         <div className="space-y-4 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -467,16 +491,18 @@ export default function EditItemModal({ index, onClose }: Props) {
                 <StarIcon className="h-6 w-6 text-gray-400" />
               )}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                const items = vault.items.filter((_: any, i: number) => i !== index)
-                setVault({ ...vault, items })
-                onClose()
-              }}
-            >
-              <TrashIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
-            </button>
+            {index !== undefined && index > -1 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const items = vault.items.filter((_: any, i: number) => i !== index)
+                  setVault({ ...vault, items })
+                  onClose()
+                }}
+              >
+                <TrashIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
+              </button>
+            )}
           </div>
         </div>
       </div>

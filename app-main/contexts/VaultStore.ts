@@ -65,8 +65,11 @@ export const useVault = create<VaultState>((set, get) => ({
       field.value = JSON.stringify(map)
     }
 
-    updateMap(src, 'recovers', slugTgt)
-    updateMap(tgt, 'recovered_by', slugSrc)
+    // when connecting from a service to a recovery item we
+    // store the relation as target.recovers -> source and
+    // source.recovered_by -> target
+    updateMap(tgt, 'recovers', slugSrc)
+    updateMap(src, 'recovered_by', slugTgt)
 
     items[srcIdx] = src
     items[tgtIdx] = tgt

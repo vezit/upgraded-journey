@@ -207,39 +207,64 @@ export const parseVault = (vault: any) => {
   // -----------------------------------------------------------------------
   // Group nodes based on folder information
   // -----------------------------------------------------------------------
-  const folderDefs: Record<string,{name:string,parentId?:string}> = {}
-  ;(vault.folders||[]).forEach((f:any)=>{ folderDefs[f.id] = {name:f.name,parentId:f.parentId} })
+  const folderDefs: Record<string, { name: string; parentId?: string }> = {}
+  ;(vault.folders || []).forEach((f: any) => {
+    folderDefs[f.id] = { name: f.name, parentId: f.parentId }
+  })
 
   const folderChildren: Record<string, Node[]> = {}
-  vault.items.forEach((item:any) => {
-    if(!item.folderId) return
-    const node = nodes.find(n => n.id === `item-${item.id}`)
-    if(!node) return
-    if(!folderChildren[item.folderId]) folderChildren[item.folderId] = []
+  ;(vault.folders || []).forEach((f: any) => {
+    folderChildren[f.id] = []
+  })
+
+  vault.items.forEach((item: any) => {
+    if (!item.folderId) return
+    const node = nodes.find((n) => n.id === `item-${item.id}`)
+    if (!node) return
     folderChildren[item.folderId].push(node)
   })
 
-  Object.entries(folderChildren).forEach(([fid,children])=>{
-    if(children.length===0) return
-    const def = folderDefs[fid] || {name:fid}
-    const minX = Math.min(...children.map(n=>n.position.x))
-    const minY = Math.min(...children.map(n=>n.position.y))
-    const maxX = Math.max(...children.map(n=>n.position.x))
-    const maxY = Math.max(...children.map(n=>n.position.y))
+  const depthOf = (id: string): number => {
+    let depth = 0
+    let pid = folderDefs[id]?.parentId
+    while (pid) {
+      depth++
+      pid = folderDefs[pid]?.parentId
+    }
+    return depth
+  }
+
+  const foldersSorted = Object.keys(folderDefs).sort(
+    (a, b) => depthOf(b) - depthOf(a),
+  )
+
+  const groupNodes: Record<string, Node> = {}
+
+  foldersSorted.forEach((fid) => {
+    const children = folderChildren[fid]
+    if (children.length === 0) return
+
+    const def = folderDefs[fid] || { name: fid }
+
+    const minX = Math.min(...children.map((n) => n.position.x))
+    const minY = Math.min(...children.map((n) => n.position.y))
+    const maxX = Math.max(...children.map((n) => n.position.x))
+    const maxY = Math.max(...children.map((n) => n.position.y))
+
     const pad = 40
-    const pos = {x:minX - pad, y:minY - pad}
-    const width = (maxX - minX) + stepX + pad*2
-    const height = (maxY - minY) + stepY + pad*2
+    const pos = { x: minX - pad, y: minY - pad }
+    const width = maxX - minX + stepX + pad * 2
+    const height = maxY - minY + stepY + pad * 2
     const groupId = `folder-${fid}`
 
-    children.forEach(n=>{
+    children.forEach((n) => {
       n.position.x -= pos.x
       n.position.y -= pos.y
       ;(n as any).parentNode = groupId
       ;(n as any).extent = 'parent'
     })
 
-    nodes.push({
+    const groupNode: Node = {
       id: groupId,
       type: 'group',
       position: pos,
@@ -253,8 +278,17 @@ export const parseVault = (vault: any) => {
         zIndex: -1,
         pointerEvents: 'none',
       },
-      ...(def.parentId ? { parentNode: `folder-${def.parentId}`, extent: 'parent' } : {}),
-    })
+      ...(def.parentId
+        ? { parentNode: `folder-${def.parentId}`, extent: 'parent' }
+        : {}),
+    }
+
+    nodes.push(groupNode)
+    groupNodes[fid] = groupNode
+
+    if (def.parentId) {
+      folderChildren[def.parentId].push(groupNode)
+    }
   })
 
   return { nodes, edges }

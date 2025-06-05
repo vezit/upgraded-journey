@@ -45,6 +45,14 @@ export default function ChatInterface() {
     }
   }
 
+  // Persist key/model when they change so they survive page reloads
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      if (apiKey) localStorage.setItem(STORAGE_KEY, apiKey)
+      if (model) localStorage.setItem(MODEL_KEY, model)
+    }
+  }, [apiKey, model])
+
   const deleteKey = () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY)

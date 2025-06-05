@@ -73,6 +73,9 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+            const isRecovery = item.fields?.some(
+              (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+            )
 
             const rowId = `item-${item.id}`
             const highlighted = hoveredId === rowId
@@ -104,6 +107,9 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
+                    {isRecovery && (
+                      <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
+                    )}
                   </div>
                 </td>
                 <td className="text-right px-4">

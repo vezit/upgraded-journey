@@ -21,6 +21,7 @@ import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
+import LostModal from './LostModal'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 
 const nodeTypes = { vault: VaultNode }
@@ -32,6 +33,7 @@ function DiagramContent() {
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
+  const [lostId, setLostId] = useState<string|null>(null)
   const isInteractive = useStore((s) => s.nodesDraggable && s.nodesConnectable && s.elementsSelectable)
   const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
 
@@ -154,10 +156,19 @@ function DiagramContent() {
           >
             Edit Item
           </li>
+          <li
+            className="px-3 py-1 cursor-pointer hover:bg-gray-100"
+            onClick={()=>{setLostId(menu.id);setMenu(null)}}
+          >
+            Lost Access
+          </li>
         </ul>
       )}
       {editIndex!==null && (
         <EditItemModal index={editIndex} onClose={()=>setEditIndex(null)} />
+      )}
+      {lostId && (
+        <LostModal id={lostId} onClose={()=>setLostId(null)} />
       )}
     </div>
   )

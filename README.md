@@ -61,6 +61,10 @@ To enable Google Analytics, copy `app-main/.env.local.example` to `app-main/.env
 
 The app is currently in an alpha stage. A small red **ALPHA** banner appears in the top-right corner of every page as a reminder.
 
+## Family Organization Items
+
+When you import or export a vault as *Personal*, items shared through a Bitwarden **family organization** are also included. Any organization with `Family` in its name is treated as part of the personal vault so the items appear alongside your own.
+
 ## Version History
 
 Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.

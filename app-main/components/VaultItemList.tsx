@@ -1,12 +1,12 @@
 'use client'
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
+import { useHiddenStore } from '@/contexts/HiddenStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
 import {
   EllipsisVerticalIcon,
   PlusIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/solid'
 
 type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
@@ -29,8 +29,8 @@ const domainFrom = (raw?: string) => {
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
-  const [hidden, setHidden] = useState<number[]>([])
   const { hoveredId, setHoveredId } = useHoverStore()
+  const { hidden, hide, unhide } = useHiddenStore()
 
 
   if (!vault?.items) return null
@@ -49,8 +49,12 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     )
   }
 
-  const hideSelected = () => {
-    setHidden(prev => Array.from(new Set([...prev, ...selected])))
+  const toggleHideSelected = () => {
+    if (!vault?.items) return
+    const ids = selected.map(i => `item-${vault.items[i].id}`)
+    const shouldHide = ids.some(id => !hidden.includes(id))
+    if (shouldHide) hide(ids)
+    else unhide(ids)
     setSelected([])
   }
 
@@ -86,13 +90,23 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
             <th className="px-4 text-left">
               <input type="checkbox" checked={selected.length === vault.items.length} onChange={toggleSelectAll} />
             </th>
-            <th className="text-left">Name</th>
+            <th className="text-left">
+              <div className="flex items-center gap-1">
+                <span>Name</span>
+                <button
+                  onClick={toggleHideSelected}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  {selected.every(i => hidden.includes(`item-${vault.items[i].id}`)) ? 'Unhide' : 'Hide'}
+                </button>
+              </div>
+            </th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {vault.items
-            .filter((_: any, index: number) => !hidden.includes(index))
+            .filter((item: any) => !hidden.includes(`item-${item.id}`))
             .map((item: any, index: number) => {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)

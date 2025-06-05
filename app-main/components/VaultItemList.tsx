@@ -30,6 +30,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const [hidden, setHidden] = useState<number[]>([])
+  const [query, setQuery] = useState('')
   const { hoveredId, setHoveredId } = useHoverStore()
 
 
@@ -94,6 +95,16 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         </div>
       )}
 
+      <div className="p-1 sticky top-0 bg-white z-10">
+        <input
+          type="text"
+          placeholder="Search"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          className="w-full border px-2 py-1 rounded text-sm"
+        />
+      </div>
+
 
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
@@ -106,10 +117,23 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           </tr>
         </thead>
         <tbody>
-          {orderedIndexes
-            .filter((index: number) => !hidden.includes(index))
-            .map((index: number) => {
-            const item = vault.items[index]
+          {vault.items
+            .filter((_: any, index: number) => !hidden.includes(index))
+            .filter((item: any) => {
+              const q = query.toLowerCase()
+              if (!q) return true
+              if (item.name?.toLowerCase().includes(q)) return true
+              if (item.login?.username?.toLowerCase().includes(q)) return true
+              if (
+                item.login?.uris?.some((u: any) =>
+                  String(u.uri).toLowerCase().includes(q)
+                )
+              )
+                return true
+              return false
+            })
+            .map((item: any, index: number) => {
+
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`

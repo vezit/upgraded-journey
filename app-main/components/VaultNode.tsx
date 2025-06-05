@@ -1,10 +1,17 @@
 'use client'
 import { Handle, NodeProps, Position } from 'reactflow'
 import Image from 'next/image'
+import { useHoverStore } from '@/contexts/HoverStore'
 
-export default function VaultNode({ data }: NodeProps) {
+export default function VaultNode({ id, data }: NodeProps) {
+  const { hoveredId, setHoveredId } = useHoverStore()
+  const highlighted = hoveredId === id
   return (
-    <div className="flex flex-col items-center gap-1 p-3 rounded-2xl shadow bg-white/90 backdrop-blur max-w-[9rem]">
+    <div
+      className={`flex flex-col items-center gap-1 p-3 rounded-2xl shadow bg-white/90 backdrop-blur max-w-[9rem] ${highlighted ? 'ring-2 ring-indigo-500' : ''}`}
+      onMouseEnter={() => setHoveredId(id)}
+      onMouseLeave={() => setHoveredId(null)}
+    >
       <div className="relative">
         <Image
           width={40}

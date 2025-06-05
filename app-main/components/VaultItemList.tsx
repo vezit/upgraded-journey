@@ -47,7 +47,6 @@ export default function VaultItemList({ onEdit }: Props) {
               <input type="checkbox" checked={selected.length === vault.items.length} onChange={toggleSelectAll} />
             </th>
             <th className="text-left">Name</th>
-            <th className="text-left hidden lg:table-cell">Owner</th>
             <th></th>
           </tr>
         </thead>
@@ -56,7 +55,6 @@ export default function VaultItemList({ onEdit }: Props) {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
-            const owner = item.login?.username?.includes('test') ? 'test' : 'Me'
             return (
               <tr
                 key={item.id}
@@ -82,11 +80,7 @@ export default function VaultItemList({ onEdit }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
-                    <div className="text-xs text-gray-500">{item.login?.username}</div>
                   </div>
-                </td>
-                <td className="hidden lg:table-cell">
-                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${owner === 'test' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>{owner}</span>
                 </td>
                 <td className="text-right px-4">
                   <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />

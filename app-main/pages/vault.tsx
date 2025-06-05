@@ -1,6 +1,7 @@
 import UploadZone from '@/components/UploadZone'
 import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
+import ChatInterface from '@/components/ChatInterface'
 import ExportButton from '@/components/ExportButton'
 import TemplateZone from '@/components/TemplateZone'
 import { parseVault } from '@/lib/parseVault'
@@ -29,7 +30,10 @@ export default function Vault() {
         </>
       )}
       {vault && <ExportButton />}
-      <VaultDiagram />
+      <div className="flex flex-col md:flex-row gap-4">
+        <VaultDiagram />
+        <ChatInterface />
+      </div>
     </div>
   )
 }

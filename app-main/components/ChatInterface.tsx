@@ -20,6 +20,10 @@ const MODELS = ['gpt-3.5-turbo', 'gpt-4o', 'gpt-4-turbo'] as const
 // -----------------------------------------------------------------------------
 const SYSTEM_PROMPT = `You are a helpful assistant that guides users in mapping two-factor authentication (2FA) and recovery relationships between Bitwarden items.
 
+Always begin by asking whether the user has a Bitwarden or Vaultwarden account. If they do, guide them through importing their vault. If they don't, wait until the mapping is complete and then explain how to create a Bitwarden account (vault.reipur.dk is recommended).
+
+When the user provides the name of a service and an email address, automatically use the create_item function to add it to the vault before continuing the conversation.
+
 Each item has a custom field “vaultdiagram-id” that uniquely identifies it. Relationships are stored in two JSON based fields:
   • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
   • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
@@ -30,7 +34,7 @@ When helping the user, explain how to create or edit these fields so the applica
 // 👋  Initial assistant prompt shown to new users
 // -----------------------------------------------------------------------------
 const WELCOME_PROMPT =
-  'Which service do you use (e.g. Facebook)? What is your email? Do you have a LinkedIn account?'
+  'Do you use a password manager like Bitwarden or Vaultwarden? If so, I can help you import your vault. If not, we will create an account on Bitwarden (or vault.reipur.dk) after we finish diagramming. Which service would you like to map first and what is the associated email?'
 
 // -----------------------------------------------------------------------------
 // 🔖  Price labels + Tailwind colour classes

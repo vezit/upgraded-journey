@@ -47,6 +47,7 @@ Keeping the value structured allows the application to automatically create edge
 
 After installing dependencies with `npm install`, start the development server with `npm run dev`.
 Open the vault page and you will see a chat panel next to the diagram. Enter your OpenAI API key and select a model from the drop-down to enable chatting with ChatGPT. The key and model are saved in your browser's local storage.
+The assistant now starts by asking whether you use Bitwarden or Vaultwarden and will automatically create items when you provide service details.
 
 Use the list panel's **New** button to create additional items with the same UI used for editing.
 

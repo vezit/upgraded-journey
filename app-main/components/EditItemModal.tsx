@@ -3,6 +3,8 @@ import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
 
+import * as storage from '@/lib/storage'
+
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -496,7 +498,12 @@ export default function EditItemModal({ index, onClose }: Props) {
                 type="button"
                 onClick={() => {
                   const items = vault.items.filter((_: any, i: number) => i !== index)
-                  setVault({ ...vault, items })
+
+                  const updated = { ...vault, items }
+                  setVault(updated)
+                  setGraph(parseVault(updated))
+                  storage.saveVault(JSON.stringify(updated))
+
                   onClose()
                 }}
               >

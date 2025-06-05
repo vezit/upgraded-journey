@@ -57,7 +57,6 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
-
       {(onClose || onCreate) && (
         <div className="flex justify-between items-center p-1">
           {onClose && (

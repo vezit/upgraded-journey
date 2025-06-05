@@ -29,6 +29,7 @@ const domainFrom = (raw?: string) => {
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
+
   const { hoveredId, setHoveredId } = useHoverStore()
   const { hidden, hide, unhide } = useHiddenStore()
 
@@ -58,6 +59,21 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     setSelected([])
   }
 
+  // sort indexes so recovery methods appear first in the list
+  const orderedIndexes = vault.items
+    .map((item: any, idx: number) => ({ item, idx }))
+    .sort((a, b) => {
+      const aRec = a.item.fields?.some(
+        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+      )
+      const bRec = b.item.fields?.some(
+        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
+      )
+      if (aRec === bRec) return 0
+      return aRec ? -1 : 1
+    })
+    .map((o) => o.idx)
+
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
@@ -83,6 +99,16 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         </div>
       )}
 
+      <div className="p-1 sticky top-0 bg-white z-10">
+        <input
+          type="text"
+          placeholder="Search"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          className="w-full border px-2 py-1 rounded text-sm"
+        />
+      </div>
+
 
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
@@ -107,7 +133,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         <tbody>
           {vault.items
             .filter((item: any) => !hidden.includes(`item-${item.id}`))
+
             .map((item: any, index: number) => {
+
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`

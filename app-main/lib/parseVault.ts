@@ -15,7 +15,7 @@ const domainFrom = (raw: string | undefined) => {
 }
 
 const logoFor = (domain?: string) =>
-  domain ? `https://logo.clearbit.com/${domain}` : '/img/default.svg'
+  domain ? `https://logo.clearbit.com/${domain}?size=80` : '/img/default.svg'
 
 // ---------------------------------------------------------------------------
 // Nothing else changes – we just add `type`, `logoUrl` and a random position.

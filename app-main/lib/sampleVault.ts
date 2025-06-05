@@ -1,5 +1,5 @@
 
-export type TemplateName = 'mail' | 'linkedin' | 'netflix' | 'demo'
+export type TemplateName = 'demo'
 
 export interface VaultItem {
   id: string
@@ -19,49 +19,6 @@ export interface VaultData {
 }
 
 const templates: Record<TemplateName, VaultData> = {
-  mail: {
-    items: [
-      {
-        id: '1',
-        type: 1,
-        name: 'Gmail',
-        login: {
-          username: 'john.doe@gmail.com',
-          password: 'SuperSecret123',
-          uris: [{ uri: 'https://mail.google.com', match: null }],
-        },
-      },
-    ],
-  },
-  linkedin: {
-    items: [
-      {
-        id: '2',
-        type: 1,
-        name: 'LinkedIn',
-        login: {
-          username: 'johndoe',
-          password: 'Pa$$w0rd!',
-          uris: [{ uri: 'https://www.linkedin.com', match: null }],
-        },
-      },
-    ],
-  },
-  netflix: {
-    items: [
-      {
-        id: '3',
-        type: 1,
-        name: 'Netflix',
-        login: {
-          username: 'john@doe.com',
-          password: 'password123',
-          uris: [{ uri: 'https://www.netflix.com', match: null }],
-        },
-        fields: [{ name: 'recovery', value: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863', type: 0 }],
-      },
-    ],
-  },
   demo: {
     items: [
       {

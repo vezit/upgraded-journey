@@ -6,6 +6,8 @@ import { useHiddenStore } from '@/contexts/HiddenStore'
 import { useHoverStore } from '@/contexts/HoverStore'
 import {
   EllipsisVerticalIcon,
+  EyeIcon,
+  EyeSlashIcon,
   PlusIcon,
 } from '@heroicons/react/24/solid'
 
@@ -74,6 +76,11 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     if (shouldHide) hide(ids)
     else unhide(ids)
     setSelected([])
+  }
+
+  const toggleVisibility = (id: string) => {
+    if (hidden.includes(id)) unhide([id])
+    else hide([id])
   }
 
   // sort indexes so recovery methods appear first in the list
@@ -166,11 +173,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
         </thead>
         <tbody>
           {items
-            .filter((item: any) => !hidden.includes(`item-${item.id}`))
             .filter((item: any) =>
               item.name?.toLowerCase().includes(query.toLowerCase())
             )
-
             .map((item: any, index: number) => {
 
             const uri = item.login?.uris?.[0]?.uri
@@ -186,7 +191,9 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
             return (
               <tr
                 key={item.id}
-                className={`bg-white hover:bg-gray-50 border-t cursor-pointer ${highlighted ? 'bg-indigo-50' : ''}`}
+                className={`bg-white hover:bg-gray-50 border-t cursor-pointer ${
+                  highlighted ? 'bg-indigo-50' : ''
+                } ${hidden.includes(rowId) ? 'opacity-50' : ''}`}
                 onClick={() => onEdit(index)}
                 onMouseEnter={() => setHoveredId(rowId)}
                 onMouseLeave={() => setHoveredId(null)}
@@ -216,7 +223,20 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                   </div>
                 </td>
                 <td className="text-right px-4">
-                  <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      toggleVisibility(rowId)
+                    }}
+                    className="mr-2"
+                  >
+                    {hidden.includes(rowId) ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                  <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 inline" />
                 </td>
               </tr>
             )

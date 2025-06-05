@@ -26,7 +26,7 @@ export default function Header() {
     <header className="bg-gray-800 text-white p-4 flex justify-between">
       <nav className="flex gap-4">
         <Link href="/">{t.home}</Link>
-        <Link href="/vault">{t.diagram}</Link>
+        <Link href="/vaultDiagram">{t.diagram}</Link>
         <Link href="/about">{t.about}</Link>
       </nav>
       <div className="flex gap-2">

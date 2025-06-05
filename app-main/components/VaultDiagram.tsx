@@ -7,6 +7,7 @@ import ReactFlow, {
   applyNodeChanges,
   NodeChange,
   Node,
+  Connection,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -18,8 +19,8 @@ import VaultNode from './VaultNode'
 const nodeTypes = { vault: VaultNode }
 
 export default function VaultDiagram() {
-  const { nodes, edges, setGraph } = useGraph()
-  const { vault } = useVault()
+  const { nodes, edges, setGraph, addEdge } = useGraph()
+  const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
@@ -47,12 +48,24 @@ export default function VaultDiagram() {
     [setGraph, nodes, edges]
   )
 
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return
+      const id = `edge-${connection.source}-${connection.target}`
+      if (edges.some((e) => e.id === id)) return
+      addEdge({ id, source: connection.source, target: connection.target, style: { stroke: '#8b5cf6' } })
+      addRecovery(connection.source.replace(/^item-/, ''), connection.target.replace(/^item-/, ''))
+    },
+    [edges, addEdge, addRecovery],
+  )
+
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onConnect={onConnect}
         onNodesChange={onNodesChange}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()

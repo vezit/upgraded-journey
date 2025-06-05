@@ -1,8 +1,18 @@
 import type { Edge, Node } from 'reactflow'
 
 // quick helper ---------------------------------------------------------------
-const domainFrom = (raw: string | undefined) =>
-  raw ? new URL(raw).hostname.replace(/^www\./, '') : undefined
+const domainFrom = (raw: string | undefined) => {
+  if (!raw) return undefined
+  try {
+    return new URL(raw).hostname.replace(/^www\./, '')
+  } catch {
+    try {
+      return new URL(`http://${raw}`).hostname.replace(/^www\./, '')
+    } catch {
+      return undefined
+    }
+  }
+}
 
 const logoFor = (domain?: string) =>
   domain ? `https://logo.clearbit.com/${domain}` : '/img/default.svg'
@@ -15,11 +25,15 @@ export const parseVault = (vault: any) => {
 
   if (!vault?.items) return { nodes, edges }
 
+  const nameToId: Record<string, string> = {}
+
   vault.items.forEach((item: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)
     const isRecovery = item.fields?.some((f:any)=>f.name==='recovery_node' && String(f.value).toLowerCase()==='true')
+
+    nameToId[item.name] = itemId
 
     nodes.push({
       id: itemId,
@@ -33,6 +47,7 @@ export const parseVault = (vault: any) => {
       },
     })
   })
+
 
   vault.items.forEach((item:any)=>{
     const source = `item-${item.id}`

@@ -1,3 +1,4 @@
+
 export type TemplateName = 'mail' | 'linkedin' | 'netflix' | 'demo'
 
 export interface VaultItem {

@@ -17,6 +17,7 @@ import { useVault } from '@/contexts/VaultStore'
 import { parseVault } from '@/lib/parseVault'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
+import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 
 const nodeTypes = { vault: VaultNode }
 
@@ -93,6 +94,23 @@ export default function VaultDiagram() {
         <MiniMap pannable />
         <Controls />
       </ReactFlow>
+      {/* Legend --------------------------------------------------------- */}
+      <div className="absolute top-1 left-1 z-10 text-xs space-y-1">
+        <div className="flex items-center gap-1 group relative">
+          <div className="w-6 border-t-2 border-purple-600" />
+          <QuestionMarkCircleIcon className="h-4 w-4 text-gray-600" />
+          <span className="absolute left-7 top-1/2 -translate-y-1/2 bg-white border rounded px-1 shadow pointer-events-none opacity-0 group-hover:opacity-100 whitespace-nowrap">
+            Recovery relationship
+          </span>
+        </div>
+        <div className="flex items-center gap-1 group relative">
+          <div className="w-6 border-t-2 border-sky-500 border-dashed" />
+          <QuestionMarkCircleIcon className="h-4 w-4 text-gray-600" />
+          <span className="absolute left-7 top-1/2 -translate-y-1/2 bg-white border rounded px-1 shadow pointer-events-none opacity-0 group-hover:opacity-100 whitespace-nowrap">
+            2FA provider link
+          </span>
+        </div>
+      </div>
       {menu && (
         <ul
           className="absolute bg-white border rounded shadow text-sm"

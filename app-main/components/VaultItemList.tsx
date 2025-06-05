@@ -1,10 +1,12 @@
 'use client'
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
+
 import { useHoverStore } from '@/contexts/HoverStore'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 
 type Props = { onEdit: (index: number) => void }
+
 
 const domainFrom = (raw?: string) => {
   if (!raw) return undefined
@@ -19,10 +21,12 @@ const domainFrom = (raw?: string) => {
   }
 }
 
+
 export default function VaultItemList({ onEdit }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const { hoveredId, setHoveredId } = useHoverStore()
+
 
   if (!vault?.items) return null
 

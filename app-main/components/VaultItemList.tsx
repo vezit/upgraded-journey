@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
+import { EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/24/solid'
 
 type Props = { onEdit: (index: number) => void; onClose?: () => void }
 
@@ -46,6 +46,7 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
 
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
+
       {onClose && (
         <div className="flex justify-end p-1">
           <button
@@ -56,6 +57,7 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
           </button>
         </div>
       )}
+
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
@@ -102,7 +104,6 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
                   />
                   <div>
                     <div className="font-medium text-sm text-gray-800">{item.name}</div>
-                    <div className="text-xs text-gray-500">{item.login?.username}</div>
                   </div>
                 </td>
                 <td className="text-right px-4">

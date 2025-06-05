@@ -1,4 +1,5 @@
 import UploadZone from '@/components/UploadZone'
+import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
 import ExportButton from '@/components/ExportButton'
 import { parseVault } from '@/lib/parseVault'
@@ -18,18 +19,13 @@ export default function Vault() {
 
   return (
     <div className="p-4 flex flex-col gap-4 mx-auto max-w-7xl px-6">
-      <UploadZone onLoad={handleLoad} />
+      {vault ? (
+        <DeleteZone />
+      ) : (
+        <UploadZone onLoad={handleLoad} />
+      )}
       {vault && <ExportButton />}
       <VaultDiagram />
-      <button
-        onClick={() => {
-          storage.clearVault()
-          setGraph({ nodes: [], edges: [] })
-        }}
-        className="self-start px-4 py-2 bg-red-500 text-white rounded"
-      >
-        Delete Vault Data
-      </button>
     </div>
   )
 }

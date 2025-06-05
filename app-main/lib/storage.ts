@@ -8,3 +8,6 @@ export const saveVault = (raw:string)=>{
 export const loadVault = ()=>{
   try{ const raw = localStorage.getItem(KEY); return raw? parseVault(JSON.parse(raw)):null }catch{ return null }
 }
+export const clearVault = ()=>{
+  try{ localStorage.removeItem(KEY) }catch{}
+}

@@ -17,6 +17,10 @@ export default function Vault() {
   const { vault, setVault } = useVault()
   const [editIndex, setEditIndex] = useState<number | null>(null)
 
+  const [showList, setShowList] = useState(true)
+  const [showChat, setShowChat] = useState(true)
+
+
   const handleLoad = (data: any) => {
     setVault(data)
     setGraph(parseVault(data))
@@ -24,7 +28,7 @@ export default function Vault() {
   }
 
   return (
-    <div className="p-4 flex flex-col gap-4 mx-auto max-w-7xl px-6">
+    <div className="p-4 flex flex-col gap-4 mx-auto px-6">
       {vault ? (
         <DeleteZone />
       ) : (
@@ -35,11 +39,15 @@ export default function Vault() {
       )}
       {vault && <ExportButton />}
       <div className="flex flex-col md:flex-row gap-4">
-        {vault && (
-          <VaultItemList onEdit={(i) => setEditIndex(i)} />
+
+        {vault && showList && (
+          <VaultItemList
+            onEdit={(i) => setEditIndex(i)}
+            onClose={() => setShowList(false)}
+          />
         )}
         <VaultDiagram />
-        <ChatInterface />
+        {showChat && <ChatInterface onClose={() => setShowChat(false)} />}
       </div>
       {editIndex !== null && (
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />

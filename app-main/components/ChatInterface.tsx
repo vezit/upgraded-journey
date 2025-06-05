@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { XMarkIcon } from '@heroicons/react/24/solid'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -19,7 +20,9 @@ const PRICE_LABELS: Record<(typeof MODELS)[number], { label: string; color: stri
   'gpt-4-turbo':    { label: 'cheaplest', color: 'text-red-600'   }, // ⇠ most expensive
 }
 
-export default function ChatInterface() {
+type Props = { onClose?: () => void }
+
+export default function ChatInterface({ onClose }: Props) {
   const [apiKey, setApiKey]   = useState('')
   const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-3.5-turbo')
   const [input, setInput]     = useState('')
@@ -150,7 +153,12 @@ export default function ChatInterface() {
       {/* Header with Delete‑key action */}
       <div className="flex justify-between items-center mb-1">
         <span className="font-medium">API Key saved</span>
-        <button onClick={deleteKey} className="text-red-600 text-sm underline">Delete Key</button>
+        <div className="flex items-center gap-2">
+          <button onClick={deleteKey} className="text-red-600 text-sm underline">Delete Key</button>
+          {onClose && (
+            <XMarkIcon onClick={onClose} className="h-5 w-5 cursor-pointer" />
+          )}
+        </div>
       </div>
 
       {ModelSelect}

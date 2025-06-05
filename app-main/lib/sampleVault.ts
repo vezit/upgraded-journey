@@ -144,6 +144,12 @@ const templates: Record<TemplateName, VaultData> = {
         login: {},
         fields: [
           { name: 'vaultdiagram-id', value: 'facebook-2fa-1111', type: 0 },
+          {
+            name: 'vaultdiagram-logo-url',
+            value: 'https://logo.clearbit.com/facebook.com?size=80',
+            type: 0,
+          },
+          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
         ],
       },
       {
@@ -154,6 +160,12 @@ const templates: Record<TemplateName, VaultData> = {
         login: {},
         fields: [
           { name: 'vaultdiagram-id', value: 'linkedin-2fa-2222', type: 0 },
+          {
+            name: 'vaultdiagram-logo-url',
+            value: 'https://logo.clearbit.com/linkedin.com?size=80',
+            type: 0,
+          },
+          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
         ],
       },
     ],

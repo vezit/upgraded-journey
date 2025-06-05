@@ -1,6 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
+import { useVault } from '@/contexts/VaultStore'
+import { useGraph } from '@/contexts/GraphStore'
+import { parseVault } from '@/lib/parseVault'
+import * as storage from '@/lib/storage'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -20,7 +24,7 @@ Each item has a custom field “vaultdiagram-id” that uniquely identifies it. 
   • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
   • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
 
-When helping the user, explain how to create or edit these fields so the application can automatically create edges between items.`
+When helping the user, explain how to create or edit these fields so the application can automatically create edges between items. Never request or store passwords or other sensitive secrets.`
 
 // -----------------------------------------------------------------------------
 // 🔖  Price labels + Tailwind colour classes
@@ -35,7 +39,7 @@ type Props = { onClose?: () => void }
 
 export default function ChatInterface({ onClose }: Props) {
   const [apiKey, setApiKey]   = useState('')
-  const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-3.5-turbo')
+  const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-4o')
   const [input, setInput]     = useState('')
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: SYSTEM_PROMPT },
@@ -76,14 +80,155 @@ export default function ChatInterface({ onClose }: Props) {
       localStorage.removeItem(MODEL_KEY)
     }
     setApiKey('')
-    setModel('gpt-3.5-turbo')
+    setModel('gpt-4o')
     setMessages([{ role: 'system', content: SYSTEM_PROMPT }])
+  }
+
+  const { vault, setVault, addRecoverySlug, addTwofa, createItem, updateItemBySlug } = useVault()
+  const { setGraph } = useGraph()
+
+  const updateGraph = (v: any) => {
+    setGraph(parseVault(v))
+    storage.saveVault(JSON.stringify(v))
+  }
+
+  const extractPassword = (text: string) => {
+    const match = text.match(/password\s*(?:is|:|=)\s*([^\s]+)/i)
+    return match ? match[1].replace(/^['"]|['"]$/g, '') : null
+  }
+
+  const stripPassword = (text: string) =>
+    text.replace(/password\s*(?:is|:|=)\s*([^\s]+)/gi, 'password: [REDACTED]')
+
+  const lastPassword = {
+    current: null as string | null,
+  }
+
+const FUNCTIONS = [
+    {
+      type: 'function',
+      function: {
+        name: 'create_item',
+        description: 'Create a new item in the vault',
+        parameters: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            slug: { type: 'string' },
+            username: { type: 'string' },
+            password: { type: 'string' },
+            uri: { type: 'string' },
+            isRecovery: { type: 'boolean' }
+          },
+          required: ['name', 'slug']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'edit_item',
+        description: 'Edit a field on an existing item identified by its slug',
+        parameters: {
+          type: 'object',
+          properties: {
+            slug: { type: 'string' },
+            field: { type: 'string', enum: ['name', 'username', 'password', 'uri'] },
+            value: { type: 'string' }
+          },
+          required: ['slug', 'field', 'value']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'map_recovery',
+        description: 'Map a recovery item to recover another item',
+        parameters: {
+          type: 'object',
+          properties: {
+            source_slug: { type: 'string' },
+            target_slug: { type: 'string' }
+          },
+          required: ['source_slug', 'target_slug']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'map_2fa',
+        description: 'Map a 2FA provider to an item',
+        parameters: {
+          type: 'object',
+          properties: {
+            service_slug: { type: 'string' },
+            provider_slug: { type: 'string' }
+          },
+          required: ['service_slug', 'provider_slug']
+        }
+      }
+    }
+  ] as const
+
+  const handleToolCalls = (calls: any[]) => {
+    if (!vault) return
+    calls.forEach((c) => {
+      try {
+        const { name, arguments: args } = c.function
+        const data = JSON.parse(args || '{}')
+        if (name === 'create_item') {
+          if (!data.password && lastPassword.current) {
+            data.password = lastPassword.current
+          }
+          createItem(data)
+          lastPassword.current = null
+          const updated = { ...useVault.getState().vault }
+          if (updated) {
+            setVault(updated)
+            updateGraph(updated)
+          }
+        } else if (name === 'edit_item') {
+          const value =
+            data.field === 'password' && !data.value && lastPassword.current
+              ? lastPassword.current
+              : data.value
+          updateItemBySlug(data.slug, data.field, value)
+          if (data.field === 'password') lastPassword.current = null
+          const updated = { ...useVault.getState().vault }
+          if (updated) {
+            setVault(updated)
+            updateGraph(updated)
+          }
+        } else if (name === 'map_recovery') {
+          addRecoverySlug(data.source_slug, data.target_slug)
+          const updated = { ...useVault.getState().vault }
+          if (updated) {
+            setVault(updated)
+            updateGraph(updated)
+          }
+        } else if (name === 'map_2fa') {
+          addTwofa(data.service_slug, data.provider_slug)
+          const updated = { ...useVault.getState().vault }
+          if (updated) {
+            setVault(updated)
+            updateGraph(updated)
+          }
+        }
+      } catch (err) {
+        console.error('tool call error', err)
+      }
+    })
   }
 
   const send = async () => {
     if (!apiKey || !input.trim()) return
 
-    const userMsg: Message = { role: 'user', content: input }
+    lastPassword.current = extractPassword(input)
+
+    const sanitized = stripPassword(input)
+    const userMsg: Message = { role: 'user', content: sanitized }
     const history = [...messages, userMsg]
     setMessages(history)
     setInput('')
@@ -96,10 +241,12 @@ export default function ChatInterface({ onClose }: Props) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ model, messages: history }),
+        body: JSON.stringify({ model, messages: history, tools: FUNCTIONS, tool_choice: 'auto' }),
       })
-      const data  = await res.json()
-      const reply = data.choices?.[0]?.message?.content
+      const data = await res.json()
+      const msg = data.choices?.[0]?.message
+      if (msg?.tool_calls) handleToolCalls(msg.tool_calls)
+      const reply = msg?.content
       if (reply) setMessages((m) => [...m, { role: 'assistant', content: reply }])
     } catch (err) {
       console.error(err)

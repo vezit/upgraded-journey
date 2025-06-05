@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
 
@@ -30,9 +30,23 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const [query, setQuery] = useState('')
+  const [width, setWidth] = useState(320)
 
   const { hoveredId, setHoveredId } = useHoverStore()
   const { hidden, hide, unhide } = useHiddenStore()
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('list-width')
+      if (stored) setWidth(parseInt(stored, 10))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('list-width', String(width))
+    }
+  }, [width])
 
 
   if (!vault?.items) return null
@@ -75,8 +89,25 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     })
     .map((o) => o.idx)
 
+  const startResize = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = width
+    const onMove = (ev: MouseEvent) => {
+      const newWidth = startWidth + ev.clientX - startX
+      setWidth(Math.max(200, Math.min(newWidth, 600)))
+    }
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
   return (
-    <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
+    <div style={{ width }} className="relative">
+      <div className="border rounded overflow-auto max-h-[80vh] h-full">
 
       {(onClose || onCreate) && (
         <div className="flex justify-between items-center p-1">
@@ -190,6 +221,11 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           })}
         </tbody>
       </table>
+      </div>
+      <div
+        onMouseDown={startResize}
+        className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-transparent"
+      />
     </div>
   )
 }

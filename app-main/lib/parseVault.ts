@@ -244,7 +244,15 @@ export const parseVault = (vault: any) => {
       type: 'group',
       position: pos,
       data: { label: def.name },
-      style: { width, height, padding: 10, border: '1px dashed #94a3b8', background: '#f8fafc' },
+      style: {
+        width,
+        height,
+        padding: 10,
+        border: '1px dashed #94a3b8',
+        background: '#f8fafc',
+        zIndex: -1,
+        pointerEvents: 'none',
+      },
       ...(def.parentId ? { parentNode: `folder-${def.parentId}`, extent: 'parent' } : {}),
     })
   })

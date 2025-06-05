@@ -3,6 +3,7 @@ import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
 import ChatInterface from '@/components/ChatInterface'
 import ExportButton from '@/components/ExportButton'
+import VaultLostButton from '@/components/VaultLostButton'
 import VersionHistoryModal from '@/components/VersionHistoryModal'
 import TemplateZone from '@/components/TemplateZone'
 import VaultItemList from '@/components/VaultItemList'
@@ -54,6 +55,7 @@ export default function Vault() {
       {vault && (
         <div className="flex gap-2">
           <ExportButton />
+          <VaultLostButton />
           <button
             onClick={() => setShowHistory(true)}
             className="px-4 py-2 bg-indigo-600 text-white rounded self-start"

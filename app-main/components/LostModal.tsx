@@ -9,7 +9,7 @@ interface Props {
 
 export default function LostModal({ id, onClose }: Props) {
   const { nodes, edges } = useGraph()
-  const { markLost } = useLostStore()
+  const { markLost, clearLost, lost } = useLostStore()
 
   const node = nodes.find(n => n.id === id)
   if (!node) return null
@@ -58,10 +58,14 @@ export default function LostModal({ id, onClose }: Props) {
         )}
 
         <button
-          onClick={() => { markLost(id); onClose() }}
+          onClick={() => {
+            if(lost.includes(id)) clearLost(id)
+            else markLost(id)
+            onClose()
+          }}
           className="bg-red-600 text-white px-4 py-2 rounded mr-2"
         >
-          Mark as Lost
+          {lost.includes(id) ? 'Have Access' : 'Mark as Lost'}
         </button>
         <button onClick={onClose} className="bg-gray-300 px-4 py-2 rounded">
           Close

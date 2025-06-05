@@ -3,7 +3,7 @@ import VaultDiagram from '@/components/VaultDiagram'
 import VaultEditor from '@/components/VaultEditor'
 import ExportButton from '@/components/ExportButton'
 import { parseVault } from '@/lib/parseVault'
-import { saveVault, clearVault } from '@/lib/storage'
+import * as storage from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 
@@ -14,7 +14,7 @@ export default function Vault() {
   const handleLoad = (data: any) => {
     setVault(data)
     setGraph(parseVault(data))
-    saveVault(JSON.stringify(data))
+    storage.saveVault(JSON.stringify(data))
   }
 
   return (
@@ -29,7 +29,7 @@ export default function Vault() {
       <VaultDiagram />
       <button
         onClick={() => {
-          clearVault()
+          storage.clearVault()
           setGraph({ nodes: [], edges: [] })
         }}
         className="self-start px-4 py-2 bg-red-500 text-white rounded"

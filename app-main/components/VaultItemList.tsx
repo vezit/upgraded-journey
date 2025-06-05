@@ -77,7 +77,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   // sort indexes so recovery methods appear first in the list
   const orderedIndexes = vault.items
     .map((item: any, idx: number) => ({ item, idx }))
-    .sort((a, b) => {
+    .sort((a: { item: any; idx: number }, b: { item: any; idx: number }) => {
       const aRec = a.item.fields?.some(
         (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
       )
@@ -87,7 +87,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
       if (aRec === bRec) return 0
       return aRec ? -1 : 1
     })
-    .map((o) => o.idx)
+    .map((o: { item: any; idx: number }) => o.idx)
 
   const startResize = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault()

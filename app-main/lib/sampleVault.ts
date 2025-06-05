@@ -6,6 +6,7 @@ export interface VaultItem {
   /** Bitwarden cipher type (1 = login) */
   type: number
   name: string
+  folderId?: string
   login: {
     username?: string
     password?: string
@@ -16,15 +17,23 @@ export interface VaultItem {
 
 export interface VaultData {
   items: VaultItem[]
+  folders?: { id: string; name: string; parentId?: string }[]
 }
 
 const templates: Record<TemplateName, VaultData> = {
   demo: {
+    folders: [
+      { id: 'vault.reipur.dk', name: 'vault.reipur.dk' },
+      { id: 'personal', name: 'Personal', parentId: 'vault.reipur.dk' },
+      { id: 'family', name: 'Family', parentId: 'vault.reipur.dk' },
+      { id: '2favault.reipur.dk', name: '2favault.reipur.dk' },
+    ],
     items: [
       {
         id: '5812e279-62f3-4cd6-a3b2-e01058b7c3fb',
         type: 1,
         name: 'Facebook',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -33,13 +42,14 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'facebook-c3fb', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604","facebook-2fa-1111"]}', type: 0 },
         ],
       },
       {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
         name: 'Gmail',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -55,6 +65,7 @@ const templates: Record<TemplateName, VaultData> = {
         id: 'a17ed712-5dcc-4b78-b9a7-9109a3567845',
         type: 1,
         name: 'LinkedIn',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -63,13 +74,14 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'linkedin-7845', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604","gmail-1863","phone-pixel-7a-2b11"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604","gmail-1863","phone-pixel-7a-2b11","linkedin-2fa-2222"]}', type: 0 },
         ],
       },
       {
         id: 'f9e5bffb-7fdc-4ec0-ae19-390940c730a1',
         type: 1,
         name: 'Netflix',
+        folderId: 'family',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -113,6 +125,7 @@ const templates: Record<TemplateName, VaultData> = {
         id: '5bdd19e4-9973-41a5-9b5f-08e54ec42431',
         type: 1,
         name: 'Vaultwarden Dev',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -121,6 +134,26 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
+        ],
+      },
+      {
+        id: '8cf2d705-2fa1-4c0e-a111-111111111111',
+        type: 1,
+        name: 'Facebook 2FA',
+        folderId: '2favault.reipur.dk',
+        login: {},
+        fields: [
+          { name: 'vaultdiagram-id', value: 'facebook-2fa-1111', type: 0 },
+        ],
+      },
+      {
+        id: '9df2d705-2fa1-4c0e-a222-222222222222',
+        type: 1,
+        name: 'LinkedIn 2FA',
+        folderId: '2favault.reipur.dk',
+        login: {},
+        fields: [
+          { name: 'vaultdiagram-id', value: 'linkedin-2fa-2222', type: 0 },
         ],
       },
     ],

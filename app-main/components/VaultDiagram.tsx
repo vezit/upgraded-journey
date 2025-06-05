@@ -5,8 +5,10 @@ import ReactFlow, {
   Controls,
   MiniMap,
   applyNodeChanges,
+  addEdge,
   NodeChange,
   Node,
+  Connection,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -47,6 +49,18 @@ export default function VaultDiagram() {
     [setGraph, nodes, edges]
   )
 
+  const onConnect = useCallback(
+    (conn: Connection) => {
+      const targetNode = nodes.find(n => n.id === conn.target)
+      if (!targetNode?.data?.isRecovery) {
+        alert('Only recovery methods can be targets')
+        return
+      }
+      setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
+    },
+    [nodes, edges, setGraph]
+  )
+
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
       <ReactFlow
@@ -54,6 +68,7 @@ export default function VaultDiagram() {
         edges={edges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
+        onConnect={onConnect}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()
           const rect = diagramRef.current?.getBoundingClientRect()

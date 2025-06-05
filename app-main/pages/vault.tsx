@@ -16,6 +16,8 @@ export default function Vault() {
   const { setGraph } = useGraph()
   const { vault, setVault } = useVault()
   const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [showList, setShowList] = useState(true)
+  const [showChat, setShowChat] = useState(true)
 
   const handleLoad = (data: any) => {
     setVault(data)
@@ -35,11 +37,14 @@ export default function Vault() {
       )}
       {vault && <ExportButton />}
       <div className="flex flex-col md:flex-row gap-4">
-        {vault && (
-          <VaultItemList onEdit={(i) => setEditIndex(i)} />
+        {vault && showList && (
+          <VaultItemList
+            onEdit={(i) => setEditIndex(i)}
+            onClose={() => setShowList(false)}
+          />
         )}
         <VaultDiagram />
-        <ChatInterface />
+        {showChat && <ChatInterface onClose={() => setShowChat(false)} />}
       </div>
       {editIndex !== null && (
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />

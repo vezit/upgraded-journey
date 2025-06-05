@@ -17,6 +17,8 @@ export default function EditItemModal({ index, onClose }: Props) {
   const [showPassword, setShowPassword] = useState(false)
   const [showTotp, setShowTotp] = useState(false)
   const [newFieldType, setNewFieldType] = useState('0')
+  const [mapTarget, setMapTarget] = useState('')
+  const [twofaTarget, setTwofaTarget] = useState('')
 
   const updateItemState = (partial: any) =>
     setItem((prev: any) => ({ ...prev, ...partial }))
@@ -34,6 +36,53 @@ export default function EditItemModal({ index, onClose }: Props) {
   }
 
   const { setGraph } = useGraph()
+
+  const recoveryItems = vault.items.filter((it: any) =>
+    it.fields?.some(
+      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+    )
+  )
+
+  const slugFor = (id: string) =>
+    vault.items
+      .find((it: any) => String(it.id) === id)?.fields?.find((f: any) => f.name === 'vaultdiagram-id')
+      ?.value
+
+  const nameForSlug = (slug: string) =>
+    vault.items.find((it: any) =>
+      it.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === slug)
+    )?.name || slug
+
+  const parseMapField = (name: string, key: string): string[] => {
+    const fld = item.fields?.find((f: any) => f.name === name)?.value
+    if (!fld) return []
+    try {
+      const m = JSON.parse(fld)
+      return Array.isArray(m[key]) ? m[key] : []
+    } catch {
+      return []
+    }
+  }
+
+  const updateMapField = (name: string, key: string, values: string[]) => {
+    let field = item.fields?.find((f: any) => f.name === name)
+    if (!field) {
+      field = { name, value: '{}', type: 0 }
+      updateItemState({ fields: [...(item.fields || []), field] })
+    }
+    try {
+      const map = JSON.parse(field.value || '{}')
+      map[key] = values
+      field.value = JSON.stringify(map)
+      updateItemState({ fields: [...(item.fields || [])] })
+    } catch {
+      field.value = JSON.stringify({ [key]: values })
+      updateItemState({ fields: [...(item.fields || [])] })
+    }
+  }
+
+  const recoveredBy = parseMapField('vaultdiagram-recovery-map', 'recovered_by')
+  const providers = parseMapField('vaultdiagram-2fa-map', 'providers')
 
 
   const handleSave = () => {
@@ -64,6 +113,36 @@ export default function EditItemModal({ index, onClose }: Props) {
   const removeField = (idx: number) => {
     const fields = item.fields?.filter((_: any, i: number) => i !== idx) || []
     updateItemState({ fields })
+  }
+
+  const addRecoveryMap = () => {
+    if (!mapTarget) return
+    const slug = slugFor(mapTarget)
+    if (!slug) return
+    if (!recoveredBy.includes(slug)) {
+      updateMapField('vaultdiagram-recovery-map', 'recovered_by', [...recoveredBy, slug])
+    }
+    setMapTarget('')
+  }
+
+  const addTwofaMap = () => {
+    if (!twofaTarget) return
+    const slug = slugFor(twofaTarget)
+    if (!slug) return
+    if (!providers.includes(slug)) {
+      updateMapField('vaultdiagram-2fa-map', 'providers', [...providers, slug])
+    }
+    setTwofaTarget('')
+  }
+
+  const removeRecoveryMap = (slug: string) => {
+    const filtered = recoveredBy.filter((s) => s !== slug)
+    updateMapField('vaultdiagram-recovery-map', 'recovered_by', filtered)
+  }
+
+  const removeTwofaMap = (slug: string) => {
+    const filtered = providers.filter((s) => s !== slug)
+    updateMapField('vaultdiagram-2fa-map', 'providers', filtered)
   }
 
   return (
@@ -203,12 +282,72 @@ export default function EditItemModal({ index, onClose }: Props) {
               onChange={toggleRecovery}
               className="h-4 w-4"
             />
-            <label htmlFor="recovery-method" className="text-sm">
-              Recovery Method
-            </label>
+          <label htmlFor="recovery-method" className="text-sm">
+            Recovery Method
+          </label>
+        </div>
+        {!isRecovery && (
+          <div className="space-y-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">Recovery Items</label>
+              {recoveredBy.map((slug) => (
+                <div key={slug} className="flex items-center gap-2 mb-1">
+                  <span className="flex-1 text-sm">{nameForSlug(slug)}</span>
+                  <button type="button" onClick={() => removeRecoveryMap(slug)}>
+                    <TrashIcon className="h-4 w-4 text-red-600" />
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2">
+                <select
+                  value={mapTarget}
+                  onChange={(e) => setMapTarget(e.target.value)}
+                  className="border border-gray-300 rounded-md px-2 py-1 flex-1"
+                >
+                  <option value="">Select item…</option>
+                  {recoveryItems.map((ri: any) => (
+                    <option key={ri.id} value={ri.id}>
+                      {ri.name}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={addRecoveryMap} className="p-1 bg-gray-100 rounded hover:bg-gray-200">
+                  Add
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">2FA Providers</label>
+              {providers.map((slug) => (
+                <div key={slug} className="flex items-center gap-2 mb-1">
+                  <span className="flex-1 text-sm">{nameForSlug(slug)}</span>
+                  <button type="button" onClick={() => removeTwofaMap(slug)}>
+                    <TrashIcon className="h-4 w-4 text-red-600" />
+                  </button>
+                </div>
+              ))}
+              <div className="flex items-center gap-2">
+                <select
+                  value={twofaTarget}
+                  onChange={(e) => setTwofaTarget(e.target.value)}
+                  className="border border-gray-300 rounded-md px-2 py-1 flex-1"
+                >
+                  <option value="">Select item…</option>
+                  {recoveryItems.map((ri: any) => (
+                    <option key={ri.id} value={ri.id}>
+                      {ri.name}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={addTwofaMap} className="p-1 bg-gray-100 rounded hover:bg-gray-200">
+                  Add
+                </button>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Custom Fields</label>
+        )}
+        <div>
+          <label className="block text-sm font-medium mb-2">Custom Fields</label>
             <div className="flex items-center space-x-2 mb-2">
               <select
                 value={newFieldType}

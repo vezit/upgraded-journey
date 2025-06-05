@@ -46,11 +46,18 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
 
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
-      <div className="flex justify-end p-1">
-        {onClose && (
-          <XMarkIcon onClick={onClose} className="h-5 w-5 cursor-pointer" />
-        )}
-      </div>
+
+      {onClose && (
+        <div className="flex justify-end p-1">
+          <button
+            onClick={onClose}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
+            Close
+          </button>
+        </div>
+      )}
+
       <table className="w-full table-auto border-separate border-spacing-y-1">
         <thead className="text-sm text-gray-500 sticky top-0 bg-white">
           <tr>
@@ -66,6 +73,10 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
             const uri = item.login?.uris?.[0]?.uri
             const domain = domainFrom(uri)
             const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+
+            const rowId = `item-${item.id}`
+            const highlighted = hoveredId === rowId
+
             return (
               <tr
                 key={item.id}

@@ -3,13 +3,24 @@ import { useEffect, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 
 interface Message {
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'system'
   content: string
 }
 
 const STORAGE_KEY = 'openai-api-key'
 const MODEL_KEY = 'openai-model'
 const MODELS = ['gpt-3.5-turbo', 'gpt-4o', 'gpt-4-turbo'] as const
+
+// -----------------------------------------------------------------------------
+// 🧭  System prompt describing mapping rules
+// -----------------------------------------------------------------------------
+const SYSTEM_PROMPT = `You are a helpful assistant that guides users in mapping two-factor authentication (2FA) and recovery relationships between Bitwarden items.
+
+Each item has a custom field “vaultdiagram-id” that uniquely identifies it. Relationships are stored in two JSON based fields:
+  • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
+  • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
+
+When helping the user, explain how to create or edit these fields so the application can automatically create edges between items.`
 
 // -----------------------------------------------------------------------------
 // 🔖  Price labels + Tailwind colour classes
@@ -26,7 +37,9 @@ export default function ChatInterface({ onClose }: Props) {
   const [apiKey, setApiKey]   = useState('')
   const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-3.5-turbo')
   const [input, setInput]     = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'system', content: SYSTEM_PROMPT },
+  ])
   const [isTyping, setIsTyping] = useState(false)
 
   // ---------------------------------------------------------------------------
@@ -64,7 +77,7 @@ export default function ChatInterface({ onClose }: Props) {
     }
     setApiKey('')
     setModel('gpt-3.5-turbo')
-    setMessages([])
+    setMessages([{ role: 'system', content: SYSTEM_PROMPT }])
   }
 
   const send = async () => {

@@ -14,13 +14,14 @@ import 'reactflow/dist/style.css'
 
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
+import { parseVault } from '@/lib/parseVault'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
 
 const nodeTypes = { vault: VaultNode }
 
 export default function VaultDiagram() {
-  const { nodes, edges, setGraph, addEdge } = useGraph()
+  const { nodes, edges, setGraph } = useGraph()
   const { vault, addRecovery } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
@@ -56,9 +57,19 @@ export default function VaultDiagram() {
         alert('Only recovery methods can be targets')
         return
       }
-      setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
+
+      if (vault && conn.source && conn.target) {
+        const srcId = conn.source.replace(/^item-/, '')
+        const tgtId = conn.target.replace(/^item-/, '')
+        addRecovery(srcId, tgtId)
+        const updated = useVault.getState().vault
+        if (updated) setGraph(parseVault(updated))
+      } else {
+        // fallback to a visual edge only
+        setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
+      }
     },
-    [nodes, edges, setGraph]
+    [nodes, edges, setGraph, vault, addRecovery]
   )
 
   return (
@@ -69,7 +80,6 @@ export default function VaultDiagram() {
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
-        onConnect={onConnect}
         onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
           e.preventDefault()
           const rect = diagramRef.current?.getBoundingClientRect()

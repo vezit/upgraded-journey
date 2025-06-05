@@ -9,6 +9,7 @@ import { useVault } from '@/contexts/VaultStore'
 import { loadVault } from '@/lib/storage'
 import { parseVault } from '@/lib/parseVault'
 import AlphaBanner from '@/components/AlphaBanner'
+import Header from '@/components/Header'
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setGraph } = useGraph()
@@ -29,6 +30,12 @@ export default function App({ Component, pageProps }: AppProps) {
       router.events.off('routeChangeComplete', handleRouteChange)
     }
   }, [router])
-  return <Component {...pageProps} />
+  return (
+    <>
+      <AlphaBanner />
+      <Header />
+      <Component {...pageProps} />
+    </>
+  )
 
 }

@@ -12,6 +12,14 @@ vault is exported and re‑imported:
 * `vaultdiagram-recovery-map` &ndash; JSON describing recovery relationships using
   the above identifiers.
 
+In addition services can reference their two-factor authentication methods with
+the optional `vaultdiagram-2fa-map` field. The value is JSON structured much
+like the recovery map and defaults to an empty object (`{}`) when omitted.
+
+```json
+{"providers": ["gmail-1863", "sms-9604"]}
+```
+
 The JSON object may contain the optional keys:
 
 * `recovers` – array of `vaultdiagram-id` values that this item can recover.

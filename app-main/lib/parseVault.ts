@@ -66,6 +66,16 @@ export const parseVault = (vault: any) => {
         f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
     )
 
+    const twofaField = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')?.value
+    let twofaProviders: string[] = []
+    if (twofaField) {
+      try {
+        const map = JSON.parse(twofaField)
+        twofaProviders = Array.isArray(map.providers) ? map.providers : []
+      } catch {}
+    }
+    const has2fa = twofaProviders.length > 0
+
     const slug = item.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
     if (slug) slugToId[slug] = itemId
 
@@ -87,6 +97,7 @@ export const parseVault = (vault: any) => {
         nestedLogoUrl,
         username: item.login?.username,
         isRecovery,
+        has2fa,
       },
     })
   })
@@ -130,6 +141,19 @@ export const parseVault = (vault: any) => {
       if (src)
         edges.push({ id: `edge-${src}-${source}`, source: src, target: source, style: { stroke: '#8b5cf6' } })
     })
+
+    const twofaField = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')?.value
+    if (twofaField) {
+      try {
+        const map2fa = JSON.parse(twofaField)
+        const providers: string[] = Array.isArray(map2fa.providers) ? map2fa.providers : []
+        providers.forEach((slug: string) => {
+          const src = slugToId[slug]
+          if (src)
+            edges.push({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke: '#0ea5e9', strokeDasharray: '4 2' } })
+        })
+      } catch {}
+    }
   })
 
   // -------------------------------------------------------------------------

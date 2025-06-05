@@ -33,6 +33,7 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'facebook-c3fb', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604"]}', type: 0 },
         ],
       },
       {
@@ -62,6 +63,7 @@ const templates: Record<TemplateName, VaultData> = {
         fields: [
           { name: 'vaultdiagram-id', value: 'linkedin-7845', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["sms-9604","gmail-1863","phone-pixel-7a-2b11"]}', type: 0 },
         ],
       },
       {

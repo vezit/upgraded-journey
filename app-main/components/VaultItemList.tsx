@@ -3,9 +3,13 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
-import { EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import {
+  EllipsisVerticalIcon,
+  PlusIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid'
 
-type Props = { onEdit: (index: number) => void; onClose?: () => void }
+type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
 
 
 const domainFrom = (raw?: string) => {
@@ -22,7 +26,7 @@ const domainFrom = (raw?: string) => {
 }
 
 
-export default function VaultItemList({ onEdit, onClose }: Props) {
+export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const { hoveredId, setHoveredId } = useHoverStore()
@@ -47,14 +51,25 @@ export default function VaultItemList({ onEdit, onClose }: Props) {
   return (
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
-      {onClose && (
-        <div className="flex justify-end p-1">
-          <button
-            onClick={onClose}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
+      {(onClose || onCreate) && (
+        <div className="flex justify-between items-center p-1">
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </button>
+          )}
+          {onCreate && (
+            <button
+              onClick={onCreate}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              <PlusIcon className="h-4 w-4" />
+              New
+            </button>
+          )}
         </div>
       )}
 

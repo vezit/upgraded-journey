@@ -6,6 +6,7 @@ import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 import { loadVault } from '@/lib/storage'
 import { parseVault } from '@/lib/parseVault'
+import AlphaBanner from '@/components/AlphaBanner'
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setGraph } = useGraph()
@@ -17,5 +18,10 @@ export default function App({ Component, pageProps }: AppProps) {
       setGraph(parseVault(raw))
     }
   }, [setGraph, setVault])
-  return <Component {...pageProps} />
+  return (
+    <>
+      <AlphaBanner />
+      <Component {...pageProps} />
+    </>
+  )
 }

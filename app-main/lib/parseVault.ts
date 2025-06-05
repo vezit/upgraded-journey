@@ -53,6 +53,13 @@ export const parseVault = (vault: any) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)
+    const customLogoUrl = item.fields?.find(
+      (f: any) => f.name === 'vaultdiagram-logo-url',
+    )?.value
+    const nestedDom = item.fields?.find(
+      (f: any) => f.name === 'vaultdiagram-nested-domain',
+    )?.value
+    const nestedLogoUrl = nestedDom ? logoFor(nestedDom) : undefined
 
     const isRecovery = item.fields?.some(
       (f: any) =>
@@ -76,7 +83,8 @@ export const parseVault = (vault: any) => {
       position: { x, y },
       data: {
         label: item.name,
-        logoUrl: logoFor(dom),
+        logoUrl: customLogoUrl || logoFor(dom),
+        nestedLogoUrl,
         username: item.login?.username,
         isRecovery,
       },

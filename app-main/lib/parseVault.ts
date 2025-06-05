@@ -1,4 +1,5 @@
 import type { Edge, Node } from 'reactflow'
+import { loadPositions } from './storage'
 
 // ---------------------------------------------------------------------------
 // Helper utilities
@@ -181,6 +182,15 @@ export const parseVault = (vault: any) => {
       n.position.y = minY - stepY
     })
   }
+
+  // -----------------------------------------------------------------------
+  // Apply saved positions from local storage if available
+  // -----------------------------------------------------------------------
+  const saved = loadPositions()
+  nodes.forEach(n => {
+    const pos = saved[n.id]
+    if(pos) n.position = pos
+  })
 
   return { nodes, edges }
 }

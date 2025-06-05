@@ -15,6 +15,7 @@ import 'reactflow/dist/style.css'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
 import { parseVault } from '@/lib/parseVault'
+import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
@@ -27,6 +28,12 @@ export default function VaultDiagram() {
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
+  const [locked, setLocked] = useState(true)
+  const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
+
+  useEffect(() => {
+    positionsRef.current = storage.loadPositions()
+  }, [vault])
 
   const handleEdit = (id: string) => {
     if(!vault) return
@@ -43,12 +50,21 @@ export default function VaultDiagram() {
 
   // allow the user to drag nodes and keep the new coordinates in state
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setGraph({
-        nodes: applyNodeChanges(changes, nodes),
-        edges,
-      }),
-    [setGraph, nodes, edges]
+    (changes: NodeChange[]) => {
+      const updated = applyNodeChanges(changes, nodes)
+      if(!locked){
+        const map = { ...positionsRef.current }
+        changes.forEach(c=>{
+          if(c.type==='position' && (c as any).position){
+            map[c.id] = (c as any).position
+          }
+        })
+        positionsRef.current = map
+        storage.savePositions(map)
+      }
+      setGraph({ nodes: updated, edges })
+    },
+    [setGraph, nodes, edges, locked]
   )
 
   const onConnect = useCallback(
@@ -75,19 +91,25 @@ export default function VaultDiagram() {
 
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
+      <button
+        onClick={() => setLocked(l => !l)}
+        className="absolute top-2 right-2 z-10 bg-white border rounded px-2 py-1 text-sm"
+      >
+        {locked ? 'Unlock' : 'Lock'}
+      </button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
-        onNodeContextMenu={(e:React.MouseEvent, n:Node) => {
-          e.preventDefault()
+        onNodeClick={(e:React.MouseEvent, n:Node) => {
           const rect = diagramRef.current?.getBoundingClientRect()
           const x = rect ? e.clientX - rect.left : e.clientX
           const y = rect ? e.clientY - rect.top : e.clientY
           setMenu({ x, y, id: n.id })
         }}
+        nodesDraggable={!locked}
         fitView
       >
         <Background />

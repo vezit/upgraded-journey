@@ -13,12 +13,14 @@ interface VaultState {
     slug: string
     username?: string
     password?: string
+    totp?: string
     uri?: string
+    notes?: string
     isRecovery?: boolean
   }) => void
   updateItemBySlug: (
     slug: string,
-    field: 'name' | 'username' | 'password' | 'uri',
+    field: 'name' | 'username' | 'password' | 'totp' | 'uri' | 'notes',
     value: string
   ) => void
 }
@@ -176,7 +178,9 @@ export const useVault = create<VaultState>((set, get) => ({
     }
     if (itemData.username) item.login.username = itemData.username
     if (itemData.password) item.login.password = itemData.password
+    if (itemData.totp) item.login.totp = itemData.totp
     if (itemData.uri) item.login.uris = [{ uri: itemData.uri, match: null }]
+    if (itemData.notes) item.notes = itemData.notes
     if (itemData.isRecovery)
       item.fields.push({ name: 'recovery_node', value: 'true', type: 0 })
 
@@ -198,10 +202,14 @@ export const useVault = create<VaultState>((set, get) => ({
       item.login = { ...item.login, username: value }
     else if (field === 'password')
       item.login = { ...item.login, password: value }
+    else if (field === 'totp')
+      item.login = { ...item.login, totp: value }
     else if (field === 'uri') {
       const uris = item.login?.uris?.length ? [...item.login.uris] : [{ match: null, uri: '' }]
       uris[0] = { ...uris[0], uri: value }
       item.login = { ...item.login, uris }
+    } else if (field === 'notes') {
+      item.notes = value
     }
 
     items[idx] = item

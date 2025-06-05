@@ -106,7 +106,7 @@ export default function ChatInterface({ onClose }: Props) {
     storage.saveVault(JSON.stringify(v))
   }
 
-  const extractPassword = (text: string) => {
+const extractPassword = (text: string) => {
     const match = text.match(/password\s*(?:is|:|=)\s*([^\s]+)/i)
     return match ? match[1].replace(/^['"]|['"]$/g, '') : null
   }
@@ -115,6 +115,17 @@ export default function ChatInterface({ onClose }: Props) {
     text.replace(/password\s*(?:is|:|=)\s*([^\s]+)/gi, 'password: [REDACTED]')
 
   const lastPassword = {
+    current: null as string | null,
+  }
+  const extractTotp = (text: string) => {
+    const match = text.match(/totp\s*(?:key|code)?\s*(?:is|:|=)\s*([^\s]+)/i)
+    return match ? match[1].replace(/^['"]|['"]$/g, '') : null
+  }
+
+  const stripTotp = (text: string) =>
+    text.replace(/totp\s*(?:key|code)?\s*(?:is|:|=)\s*([^\s]+)/gi, 'totp: [REDACTED]')
+
+  const lastTotp = {
     current: null as string | null,
   }
 
@@ -132,7 +143,9 @@ const FUNCTIONS = [
             slug: { type: 'string' },
             username: { type: 'string' },
             password: { type: 'string' },
+            totp: { type: 'string' },
             uri: { type: 'string' },
+            notes: { type: 'string' },
             isRecovery: { type: 'boolean' }
           },
           required: ['name', 'slug']
@@ -148,7 +161,7 @@ const FUNCTIONS = [
           type: 'object',
           properties: {
             slug: { type: 'string' },
-            field: { type: 'string', enum: ['name', 'username', 'password', 'uri'] },
+            field: { type: 'string', enum: ['name', 'username', 'password', 'totp', 'uri', 'notes'] },
             value: { type: 'string' }
           },
           required: ['slug', 'field', 'value']
@@ -197,8 +210,12 @@ const FUNCTIONS = [
           if (!data.password && lastPassword.current) {
             data.password = lastPassword.current
           }
+          if (!data.totp && lastTotp.current) {
+            data.totp = lastTotp.current
+          }
           createItem(data)
           lastPassword.current = null
+          lastTotp.current = null
           const updated = { ...useVault.getState().vault }
           if (updated) {
             setVault(updated)
@@ -208,9 +225,12 @@ const FUNCTIONS = [
           const value =
             data.field === 'password' && !data.value && lastPassword.current
               ? lastPassword.current
+              : data.field === 'totp' && !data.value && lastTotp.current
+              ? lastTotp.current
               : data.value
           updateItemBySlug(data.slug, data.field, value)
           if (data.field === 'password') lastPassword.current = null
+          if (data.field === 'totp') lastTotp.current = null
           const updated = { ...useVault.getState().vault }
           if (updated) {
             setVault(updated)
@@ -241,8 +261,9 @@ const FUNCTIONS = [
     if (!apiKey || !input.trim()) return
 
     lastPassword.current = extractPassword(input)
+    lastTotp.current = extractTotp(input)
 
-    const sanitized = stripPassword(input)
+    const sanitized = stripTotp(stripPassword(input))
     const userMsg: Message = { role: 'user', content: sanitized }
     const history = [...messages, userMsg]
     setMessages(history)

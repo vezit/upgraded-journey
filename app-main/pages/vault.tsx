@@ -67,7 +67,6 @@ export default function Vault() {
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
       )}
       {creating && <EditItemModal onClose={() => setCreating(false)} />}
-
     </div>
   )
 }

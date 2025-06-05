@@ -3,7 +3,11 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
-import { EllipsisVerticalIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import {
+  EllipsisVerticalIcon,
+  PlusIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/solid'
 
 type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
 
@@ -54,27 +58,27 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     <div className="border rounded w-full md:w-80 overflow-auto max-h-[80vh]">
 
 
-      <div className="flex justify-between items-center p-1">
-        <button
-          onClick={hideSelected}
-          disabled={selected.length === 0}
-          className={`text-xs ${
-            selected.length === 0
-              ? 'text-gray-300'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Hide Selected
-        </button>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-xs text-gray-500 hover:text-gray-700"
-          >
-            Close
-          </button>
-        )}
-      </div>
+      {(onClose || onCreate) && (
+        <div className="flex justify-between items-center p-1">
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </button>
+          )}
+          {onCreate && (
+            <button
+              onClick={onCreate}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              <PlusIcon className="h-4 w-4" />
+              New
+            </button>
+          )}
+        </div>
+      )}
 
 
       <table className="w-full table-auto border-separate border-spacing-y-1">

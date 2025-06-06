@@ -69,6 +69,7 @@ When you import or export a vault as *Personal*, items shared through a Bitwarde
 
 Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.
 
+
 ## Web Version
 
 Run `npm run dev` to start the application in development mode. When you are ready to deploy, create an optimized build with `next build` and start it using `next start`.

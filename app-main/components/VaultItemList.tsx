@@ -177,6 +177,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                 </button>
               </div>
             </th>
+            <th className="text-left">Vault</th>
             <th></th>
           </tr>
         </thead>
@@ -231,6 +232,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                     )}
                   </div>
                 </td>
+                <td className="text-sm text-gray-700">{item.vault || 'None'}</td>
                 <td className="text-right px-4">
                   <button
                     onClick={e => {

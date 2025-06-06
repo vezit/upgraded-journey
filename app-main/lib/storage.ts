@@ -1,5 +1,6 @@
 const KEY = 'vault-data'
 const POS_KEY = 'vault-positions'
+const Z_KEY = 'vault-zindex'
 const HISTORY_KEY = 'vault-history'
 
 export const saveVault = (raw: string) => {
@@ -39,4 +40,14 @@ export const loadPositions = ()=>{
 }
 export const clearPositions = ()=>{
   try{ localStorage.removeItem(POS_KEY) }catch{}
+}
+
+export const saveZIndex = (map:Record<string,number>)=>{
+  try{ localStorage.setItem(Z_KEY, JSON.stringify(map)) }catch{}
+}
+export const loadZIndex = ()=>{
+  try{ const raw = localStorage.getItem(Z_KEY); return raw? JSON.parse(raw):{} }catch{ return {} }
+}
+export const clearZIndex = ()=>{
+  try{ localStorage.removeItem(Z_KEY) }catch{}
 }

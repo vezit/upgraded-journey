@@ -226,6 +226,8 @@ function DiagramContent() {
         onNodeClick={openMenu}
         onNodeContextMenu={openMenu}
         nodesDraggable={isInteractive}
+        defaultEdgeOptions={{ style: { stroke: '#8b5cf6' } }}
+        connectionLineStyle={{ stroke: '#8b5cf6' }}
         fitView
       >
         <Background />

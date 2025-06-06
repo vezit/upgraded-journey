@@ -8,8 +8,10 @@ import ReactFlow, {
   addEdge,
   NodeChange,
   Node,
+  Edge,
   Connection,
   useStore,
+  Position,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -27,6 +29,21 @@ import LostModal from './LostModal'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 
 const nodeTypes = { vault: VaultNode, group: GroupNode }
+
+const orientEdges = (nodes: Node[], edges: Edge[]): Edge[] => {
+  const map = new Map(nodes.map(n => [n.id, n.position.y]))
+  return edges.map(e => {
+    const srcY = map.get(e.source)
+    const tgtY = map.get(e.target)
+    if (srcY === undefined || tgtY === undefined) return e
+    const sourceAbove = srcY <= tgtY
+    return {
+      ...e,
+      sourcePosition: sourceAbove ? Position.Bottom : Position.Top,
+      targetPosition: sourceAbove ? Position.Top : Position.Bottom,
+    }
+  })
+}
 
 function DiagramContent() {
   const { nodes, edges, setGraph } = useGraph()
@@ -86,7 +103,7 @@ function DiagramContent() {
         positionsRef.current = map
         storage.savePositions(map)
       }
-      setGraph({ nodes: updated, edges })
+      setGraph({ nodes: updated, edges: orientEdges(updated, edges) })
     },
     [setGraph, nodes, edges, isInteractive, locked]
   )
@@ -107,7 +124,8 @@ function DiagramContent() {
         if (updated) setGraph(parseVault(updated))
       } else {
         // fallback to a visual edge only
-        setGraph({ nodes, edges: addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges) })
+        const newEdges = addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges)
+        setGraph({ nodes, edges: orientEdges(nodes, newEdges) })
       }
     },
     [nodes, edges, setGraph, vault, addRecovery]

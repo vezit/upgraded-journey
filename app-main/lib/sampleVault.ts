@@ -29,9 +29,7 @@ const personalTemplate: VaultData = {
     organizations: [{ id: 'family-org', name: 'Family (organization)' }],
     folders: [
       { id: 'personal', name: 'Beginner Template' },
-      { id: 'vault.reipur.dk', name: 'Beginner Template', parentId: 'personal' },
-
-      { id: 'family', name: 'Family', parentId: 'vault.reipur.dk' },
+      { id: 'family', name: 'Family', parentId: 'personal' },
       { id: '2favault.reipur.dk', name: '2favault.reipur.dk' },
     ],
     items: [

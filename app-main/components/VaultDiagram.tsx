@@ -204,7 +204,18 @@ function DiagramContent() {
       : { ...n, draggable: true, connectable: true, selectable: true }
   )
 
-  const visibleNodes = nodesWithLock.filter(n => !hidden.includes(n.id))
+  const nodeMap = new Map(nodesWithLock.map(n => [n.id, n]))
+  const isVisible = (n: Node): boolean => {
+    if (hidden.includes(n.id)) return false
+    let parent = n.parentNode ? nodeMap.get(n.parentNode) : null
+    while (parent) {
+      if (hidden.includes(parent.id)) return false
+      parent = parent.parentNode ? nodeMap.get(parent.parentNode) : null
+    }
+    return true
+  }
+
+  const visibleNodes = nodesWithLock.filter(isVisible)
   const validNodeIds = new Set(visibleNodes.map(n => n.id))
   const visibleEdges = edges
     .filter(

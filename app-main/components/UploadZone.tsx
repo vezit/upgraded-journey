@@ -6,17 +6,25 @@ import { filterVaultByCategory, VaultCategory } from '@/lib/filterVault'
 
 export default function UploadZone({ onLoad }:{ onLoad:(json:any)=>void }){
   const [category, setCategory] = useState<VaultCategory>('personal')
+  const [name, setName] = useState('')
   const onDrop = useCallback((files:File[])=>{
     const file = files[0]
     file.text().then(txt=>{
       try{
         const data = JSON.parse(txt)
         const filtered = filterVaultByCategory(data, category)
+        let vaultName = name.trim() || (category==='personal' ? 'My Vault' : '')
+        if(category==='organization' && !vaultName){
+          vaultName = prompt('Vault name?') || ''
+          if(!vaultName) return
+        }
+        filtered.items = filtered.items.map((it:any)=>({ ...it, vault: vaultName || undefined }))
+        filtered.vaults = Array.from(new Set([...(filtered.vaults||[]), vaultName].filter(Boolean)))
         onLoad(filtered)
         saveVault(JSON.stringify(filtered))
       }catch{ alert('Invalid export') }
     })
-  },[onLoad, category])
+  },[onLoad, category, name])
   const {getRootProps,getInputProps,isDragActive}=useDropzone({onDrop,accept:{'application/json':['.json','.csv']}})
   return (
     <div>
@@ -30,6 +38,13 @@ export default function UploadZone({ onLoad }:{ onLoad:(json:any)=>void }){
           <option value="personal">vault.reipur.dk</option>
           <option value="organization">Organization</option>
         </select>
+        <input
+          type="text"
+          placeholder="Vault name"
+          value={name}
+          onChange={e=>setName(e.target.value)}
+          className="border px-2 py-1 ml-2"
+        />
       </div>
     </div>
   )

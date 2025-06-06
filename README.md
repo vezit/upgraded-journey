@@ -69,3 +69,19 @@ When you import or export a vault as *Personal*, items shared through a Bitwarde
 
 Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.
 
+## Web Version
+
+Run `npm run dev` to start the application in development mode. When you are ready to deploy, create an optimized build with `next build` and start it using `next start`.
+
+## Desktop App
+
+The project can also be compiled as a desktop application via [Tauri](https://tauri.app/). After installing the Tauri CLI run `npm run tauri dev` to launch the desktop app during development. Use `npm run tauri build` to produce distributable binaries.
+
+## Offline Mode
+
+Set `NEXT_PUBLIC_OFFLINE=true` in your `.env.local` file to disable external network requests. Logos are loaded from `app-main/public/img` and you can drop additional icons into that folder for offline use.
+
+## Third-Party Services
+
+Bitwarden, Clearbit, Supabase and OpenAI integrations are optional conveniences and are not affiliated with this project.
+

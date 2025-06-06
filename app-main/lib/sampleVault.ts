@@ -6,6 +6,7 @@ export interface VaultItem {
   /** Bitwarden cipher type (1 = login) */
   type: number
   name: string
+  vault?: string
   folderId?: string
   organizationId?: string
   login: {
@@ -19,9 +20,11 @@ export interface VaultItem {
 export interface VaultData {
   items: VaultItem[]
   folders?: { id: string; name: string; parentId?: string }[]
+  vaults?: string[]
 }
 
 const personalTemplate: VaultData = {
+    vaults: ['My Vault'],
     folders: [
       { id: 'personal', name: 'vault.reipur.dk' },
       { id: 'vault.reipur.dk', name: 'vault.reipur.dk', parentId: 'personal' },
@@ -34,6 +37,7 @@ const personalTemplate: VaultData = {
         id: '5812e279-62f3-4cd6-a3b2-e01058b7c3fb',
         type: 1,
         name: 'Facebook',
+        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -50,6 +54,7 @@ const personalTemplate: VaultData = {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
         name: 'Gmail',
+        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -66,6 +71,7 @@ const personalTemplate: VaultData = {
         id: 'a17ed712-5dcc-4b78-b9a7-9109a3567845',
         type: 1,
         name: 'LinkedIn',
+        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -82,6 +88,7 @@ const personalTemplate: VaultData = {
         id: 'f9e5bffb-7fdc-4ec0-ae19-390940c730a1',
         type: 1,
         name: 'Netflix',
+        vault: 'My Vault',
         folderId: 'family',
         login: {
           username: 'john.doe@example.com',
@@ -126,6 +133,7 @@ const personalTemplate: VaultData = {
         id: '5bdd19e4-9973-41a5-9b5f-08e54ec42431',
         type: 1,
         name: 'Vaultwarden Dev',
+        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -141,6 +149,7 @@ const personalTemplate: VaultData = {
         id: '8cf2d705-2fa1-4c0e-a111-111111111111',
         type: 1,
         name: 'Facebook 2FA',
+        vault: 'My Vault',
         folderId: '2favault.reipur.dk',
         login: {},
         fields: [
@@ -157,6 +166,7 @@ const personalTemplate: VaultData = {
         id: '9df2d705-2fa1-4c0e-a222-222222222222',
         type: 1,
         name: 'LinkedIn 2FA',
+        vault: 'My Vault',
         folderId: '2favault.reipur.dk',
         login: {},
         fields: [
@@ -173,6 +183,7 @@ const personalTemplate: VaultData = {
 };
 
 const organizationExtras: VaultData = {
+    vaults: ['Acme Corp'],
     folders: [
       { id: 'organization', name: 'Organization' },
       { id: 'acme', name: 'Acme Corp', parentId: 'organization' },
@@ -182,6 +193,7 @@ const organizationExtras: VaultData = {
         id: '11111111-2222-4333-8444-555555555555',
         type: 1,
         name: 'Slack',
+        vault: 'Acme Corp',
         folderId: 'acme',
         organizationId: 'org-demo',
         login: {
@@ -198,6 +210,7 @@ const organizationExtras: VaultData = {
         id: '22222222-3333-4444-8555-666666666666',
         type: 1,
         name: 'GitHub',
+        vault: 'Acme Corp',
         folderId: 'acme',
         organizationId: 'org-demo',
         login: {
@@ -214,6 +227,7 @@ const organizationExtras: VaultData = {
         id: '33333333-4444-5555-8666-777777777777',
         type: 1,
         name: 'YubiKey',
+        vault: 'Acme Corp',
         folderId: 'acme',
         organizationId: 'org-demo',
         login: {},
@@ -231,6 +245,7 @@ export function createTemplate(name: TemplateName): VaultData {
     const extra = JSON.parse(JSON.stringify(organizationExtras))
     if (extra.folders) base.folders = [...(base.folders || []), ...extra.folders]
     base.items.push(...extra.items)
+    if (extra.vaults) base.vaults = [...(base.vaults || []), ...extra.vaults]
   }
   return base
 }

@@ -1,5 +1,5 @@
 
-export type TemplateName = 'personal' | 'organization'
+export type TemplateName = 'personal'
 
 export interface VaultItem {
   id: string
@@ -21,10 +21,12 @@ export interface VaultData {
   items: VaultItem[]
   folders?: { id: string; name: string; parentId?: string }[]
   vaults?: string[]
+  organizations?: { id: string; name: string }[]
 }
 
 const personalTemplate: VaultData = {
-    vaults: ['My Vault'],
+    vaults: ['My Vault', 'Family (organization)'],
+    organizations: [{ id: 'family-org', name: 'Family (organization)' }],
     folders: [
       { id: 'personal', name: 'vault.reipur.dk' },
       { id: 'vault.reipur.dk', name: 'vault.reipur.dk', parentId: 'personal' },
@@ -88,8 +90,9 @@ const personalTemplate: VaultData = {
         id: 'f9e5bffb-7fdc-4ec0-ae19-390940c730a1',
         type: 1,
         name: 'Netflix',
-        vault: 'My Vault',
+        vault: 'Family (organization)',
         folderId: 'family',
+        organizationId: 'family-org',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -182,70 +185,6 @@ const personalTemplate: VaultData = {
     ],
 };
 
-const organizationExtras: VaultData = {
-    vaults: ['Acme Corp'],
-    folders: [
-      { id: 'organization', name: 'Organization' },
-      { id: 'acme', name: 'Acme Corp', parentId: 'organization' },
-    ],
-    items: [
-      {
-        id: '11111111-2222-4333-8444-555555555555',
-        type: 1,
-        name: 'Slack',
-        vault: 'Acme Corp',
-        folderId: 'acme',
-        organizationId: 'org-demo',
-        login: {
-          username: 'john.doe@acme.com',
-          password: '',
-          uris: [{ uri: 'https://slack.com', match: null }],
-        },
-        fields: [
-          { name: 'vaultdiagram-id', value: 'slack-org', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["yubikey-org"]}', type: 0 },
-        ],
-      },
-      {
-        id: '22222222-3333-4444-8555-666666666666',
-        type: 1,
-        name: 'GitHub',
-        vault: 'Acme Corp',
-        folderId: 'acme',
-        organizationId: 'org-demo',
-        login: {
-          username: 'jdoe',
-          password: '',
-          uris: [{ uri: 'https://github.com', match: null }],
-        },
-        fields: [
-          { name: 'vaultdiagram-id', value: 'github-org', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["yubikey-org"]}', type: 0 },
-        ],
-      },
-      {
-        id: '33333333-4444-5555-8666-777777777777',
-        type: 1,
-        name: 'YubiKey',
-        vault: 'Acme Corp',
-        folderId: 'acme',
-        organizationId: 'org-demo',
-        login: {},
-        fields: [
-          { name: 'vaultdiagram-id', value: 'yubikey-org', type: 0 },
-          { name: 'recovery_node', value: 'true', type: 0 },
-        ],
-      },
-    ],
-  }
-
-export function createTemplate(name: TemplateName): VaultData {
-  const base = JSON.parse(JSON.stringify(personalTemplate))
-  if (name === 'organization') {
-    const extra = JSON.parse(JSON.stringify(organizationExtras))
-    if (extra.folders) base.folders = [...(base.folders || []), ...extra.folders]
-    base.items.push(...extra.items)
-    if (extra.vaults) base.vaults = [...(base.vaults || []), ...extra.vaults]
-  }
-  return base
+export function createTemplate(): VaultData {
+  return JSON.parse(JSON.stringify(personalTemplate))
 }

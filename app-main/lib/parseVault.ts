@@ -42,6 +42,13 @@ const logoFor = (domain?: string) =>
 export const parseVault = (vault: any, shrinkGroups = false) => {
   const nodes: Node[] = []
   const edges: Edge[] = []
+  const edgeIds = new Set<string>()
+
+  const addEdgeUnique = (edge: Edge) => {
+    if (edgeIds.has(edge.id)) return
+    edgeIds.add(edge.id)
+    edges.push(edge)
+  }
 
   if (!vault?.items) return { nodes, edges }
 
@@ -141,7 +148,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     item.fields?.forEach((f: any) => {
       if (f.name === 'recovery' && f.value) {
         const target = `item-${f.value}`
-        edges.push({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
+        addEdgeUnique({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
       }
     })
 
@@ -162,13 +169,13 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     recovers.forEach((slug) => {
       const target = slugToId[slug]
       if (target)
-        edges.push({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
+        addEdgeUnique({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
     })
 
     recoveredBy.forEach((slug) => {
       const src = slugToId[slug]
       if (src)
-        edges.push({ id: `edge-${src}-${source}`, source: src, target: source, style: { stroke: '#8b5cf6' } })
+        addEdgeUnique({ id: `edge-${src}-${source}`, source: src, target: source, style: { stroke: '#8b5cf6' } })
     })
 
     const twofaField = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')?.value
@@ -179,7 +186,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
         providers.forEach((slug: string) => {
           const src = slugToId[slug]
           if (src)
-            edges.push({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke: '#0ea5e9', strokeDasharray: '4 2' } })
+            addEdgeUnique({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke: '#0ea5e9', strokeDasharray: '4 2' } })
         })
       } catch {}
     }

@@ -253,8 +253,8 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
 
     const pad = shrinkGroups ? 10 : 40
     let pos = { x: minX - pad, y: minY - pad }
-    let width = maxX - minX + stepX + (shrinkGroups ? 0 : pad * 2)
-    let height = maxY - minY + stepY + (shrinkGroups ? 0 : pad * 2)
+    let width = maxX - minX + stepX + pad * 2
+    let height = maxY - minY + stepY + pad * 2
     const groupId = `folder-${fid}`
 
     const siblings = Object.values(groupNodes).filter(g => (g as any).parentNode === (def.parentId ? `folder-${def.parentId}` : undefined))

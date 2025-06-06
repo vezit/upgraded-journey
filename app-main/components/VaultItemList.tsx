@@ -76,18 +76,18 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
     )
   }
 
-  const toggleHideSelected = () => {
+  const toggleHideSelected = async () => {
     if (!items.length) return
     const ids = selected.map(i => `item-${items[i].id}`)
     const shouldHide = ids.some(id => !hidden.includes(id))
-    if (shouldHide) hide(ids)
-    else unhide(ids)
+    if (shouldHide) await hide(ids)
+    else await unhide(ids)
     setSelected([])
   }
 
-  const toggleVisibility = (id: string) => {
-    if (hidden.includes(id)) unhide([id])
-    else hide([id])
+  const toggleVisibility = async (id: string) => {
+    if (hidden.includes(id)) await unhide([id])
+    else await hide([id])
   }
 
   const toggleLock = (id: string) => {
@@ -98,12 +98,12 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const idsForVault = (name: string) =>
     items.filter((it: any) => (it.vault || 'None') === name).map((it: any) => `item-${it.id}`)
 
-  const toggleVaultVisibility = (name: string) => {
+  const toggleVaultVisibility = async (name: string) => {
     const ids = idsForVault(name)
     if (!ids.length) return
     const shouldHide = ids.some(id => !hidden.includes(id))
-    if (shouldHide) hide(ids)
-    else unhide(ids)
+    if (shouldHide) await hide(ids)
+    else await unhide(ids)
   }
 
   const toggleVaultLock = (name: string) => {

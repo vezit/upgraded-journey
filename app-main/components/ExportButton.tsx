@@ -1,11 +1,13 @@
 'use client'
 import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
+import { useHiddenStore } from '@/contexts/HiddenStore'
 import { saveVault } from '@/lib/storage'
 import { filterVaultByCategory, VaultCategory } from '@/lib/filterVault'
 
 export default function ExportButton() {
   const { vault } = useVault()
+  const { key } = useHiddenStore()
   const [category, setCategory] = useState<VaultCategory>('personal')
   if (!vault) return null
 
@@ -20,6 +22,7 @@ export default function ExportButton() {
     a.click()
     URL.revokeObjectURL(url)
     saveVault(json)
+    alert(`Decrypt key: ${key}`)
   }
 
   return (

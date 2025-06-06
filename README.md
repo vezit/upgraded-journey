@@ -69,3 +69,5 @@ When you import or export a vault as *Personal*, items shared through a Bitwarde
 
 Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.
 
+
+See [DISCLAIMER.md](DISCLAIMER.md) for the project disclaimer.

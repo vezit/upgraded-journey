@@ -259,6 +259,12 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     return depth
   }
 
+  const depthMap: Record<string, number> = {}
+  Object.keys(folderDefs).forEach(fid => {
+    depthMap[fid] = depthOf(fid)
+  })
+  const maxDepth = Math.max(0, ...Object.values(depthMap))
+
   const foldersSorted = Object.keys(folderDefs).sort(
     (a, b) => depthOf(b) - depthOf(a),
   )
@@ -302,6 +308,9 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
       if(!shrinkGroups) (n as any).extent = 'parent'
     })
 
+    const depth = depthMap[fid]
+    const zIndex = -(maxDepth - depth + 1)
+
     const groupNode: Node = {
       id: groupId,
       type: 'group',
@@ -313,7 +322,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
         padding: 10,
         border: '1px dashed #94a3b8',
         background: '#f8fafc',
-        zIndex: -1,
+        zIndex,
       },
       ...(def.parentId
         ? { parentNode: `folder-${def.parentId}`, extent: 'parent' }

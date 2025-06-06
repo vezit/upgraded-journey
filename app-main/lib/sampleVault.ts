@@ -25,7 +25,7 @@ export interface VaultData {
 }
 
 const personalTemplate: VaultData = {
-    vaults: ['My Vault', 'Family (organization)'],
+    vaults: ['My Vault', 'Family (organization)', '2favault.reipur.dk'],
     organizations: [{ id: 'family-org', name: 'Family (organization)' }],
     folders: [
       { id: 'personal', name: 'Beginner Template' },
@@ -150,7 +150,7 @@ const personalTemplate: VaultData = {
         id: '8cf2d705-2fa1-4c0e-a111-111111111111',
         type: 1,
         name: 'Facebook 2FA',
-        vault: 'My Vault',
+        vault: '2favault.reipur.dk',
         folderId: '2favault.reipur.dk',
         login: {},
         fields: [
@@ -167,7 +167,7 @@ const personalTemplate: VaultData = {
         id: '9df2d705-2fa1-4c0e-a222-222222222222',
         type: 1,
         name: 'LinkedIn 2FA',
-        vault: 'My Vault',
+        vault: '2favault.reipur.dk',
         folderId: '2favault.reipur.dk',
         login: {},
         fields: [

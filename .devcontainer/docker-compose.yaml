@@ -7,10 +7,6 @@ services:
     command: sleep infinity
     stdin_open: true
     tty: true
-    ports:
-      - "3000:3000"
-      - "9229:9229"
-      - "9230:9230"
     volumes:
       - ..:/usr/src/project
 

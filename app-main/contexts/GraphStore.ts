@@ -8,6 +8,7 @@ interface GraphState {
   edges: Edge[]
   setGraph: (g: VaultGraph) => void
   addEdge: (e: Edge) => void
+  removeEdge: (id: string) => void
 }
 
 export const useGraph = create<GraphState>(set => ({
@@ -20,4 +21,5 @@ export const useGraph = create<GraphState>(set => ({
       return { nodes: g.nodes, edges: filtered }
     }),
   addEdge: e => set(state => ({ edges: [...state.edges, e] })),
+  removeEdge: id => set(state => ({ edges: state.edges.filter(e => e.id !== id) })),
 }))

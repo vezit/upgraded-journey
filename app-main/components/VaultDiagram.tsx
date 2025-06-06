@@ -46,15 +46,18 @@ const orientEdges = (nodes: Node[], edges: Edge[]): Edge[] => {
 }
 
 function DiagramContent() {
-  const { nodes, edges, setGraph } = useGraph()
+  const { nodes, edges, setGraph, removeEdge } = useGraph()
   const { hidden } = useHiddenStore()
   const { locked } = useLockedStore()
   const { lost, clearLost, markLost } = useLostStore()
-  const { vault, addRecovery } = useVault()
+  const { vault, addRecovery, removeRecovery, removeTwofa } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
+  const [edgeMenu, setEdgeMenu] = useState<{x:number,y:number,id:string,edge:Edge}|null>(null)
   const [editIndex, setEditIndex] = useState<number|null>(null)
   const [lostId, setLostId] = useState<string|null>(null)
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string|null>(null)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string|null>(null)
   const isInteractive = useStore((s) => s.nodesDraggable && s.nodesConnectable && s.elementsSelectable)
   const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
   const zIndexRef = useRef<Record<string,number>>(storage.loadZIndex())
@@ -98,11 +101,60 @@ function DiagramContent() {
     setMenu({ x, y, id: n.id })
   }
 
-  useEffect(()=>{
-    const close = ()=>setMenu(null)
+  const openEdgeMenu = (e: React.MouseEvent, edge: Edge) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isInteractive) return
+    const rect = diagramRef.current?.getBoundingClientRect()
+    const x = rect ? e.clientX - rect.left : e.clientX
+    const y = rect ? e.clientY - rect.top : e.clientY
+    setEdgeMenu({ x, y, id: edge.id, edge })
+    setSelectedEdgeId(edge.id)
+  }
+
+  const handleDeleteEdge = (edge: Edge) => {
+    if (!confirm('Delete this connection?')) return
+    if (vault) {
+      const src = edge.source.replace(/^item-/, '')
+      const tgt = edge.target.replace(/^item-/, '')
+      if (edge.id.startsWith('edge-2fa-')) {
+        removeTwofa(tgt, src)
+      } else {
+        removeRecovery(src, tgt)
+      }
+      const updated = useVault.getState().vault
+      if (updated) {
+        setGraph(parseVault(updated))
+        storage.saveVault(JSON.stringify(updated))
+      }
+    } else {
+      removeEdge(edge.id)
+    }
+    setEdgeMenu(null)
+    setSelectedEdgeId(null)
+  }
+
+  useEffect(() => {
+    const close = () => {
+      setMenu(null)
+      setEdgeMenu(null)
+      setSelectedEdgeId(null)
+    }
     document.addEventListener('click', close)
-    return ()=>document.removeEventListener('click', close)
-  },[])
+    return () => document.removeEventListener('click', close)
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedEdgeId) {
+        e.preventDefault()
+        const edge = edges.find(ed => ed.id === selectedEdgeId)
+        if (edge) handleDeleteEdge(edge)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [selectedEdgeId, edges])
 
   // allow the user to drag nodes and keep the new coordinates in state
   const onNodesChange = useCallback(
@@ -153,7 +205,11 @@ function DiagramContent() {
   )
 
   const visibleNodes = nodesWithLock.filter(n => !hidden.includes(n.id))
-  const visibleEdges = edges.filter(e => !hidden.includes(e.source) && !hidden.includes(e.target))
+  const visibleEdges = edges
+    .filter(e => !hidden.includes(e.source) && !hidden.includes(e.target))
+    .map(e =>
+      hoveredEdgeId === e.id ? { ...e, animated: true } : { ...e, animated: false }
+    )
 
   return (
     <div ref={diagramRef} className="relative w-full h-[80vh] rounded-lg overflow-hidden border">
@@ -163,6 +219,10 @@ function DiagramContent() {
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
+        onEdgeMouseEnter={(_, e) => setHoveredEdgeId(e.id)}
+        onEdgeMouseLeave={() => setHoveredEdgeId(null)}
+        onEdgeContextMenu={openEdgeMenu}
+        onEdgeClick={(_, e) => setSelectedEdgeId(e.id)}
         onNodeClick={openMenu}
         onNodeContextMenu={openMenu}
         nodesDraggable={isInteractive}
@@ -219,7 +279,20 @@ function DiagramContent() {
               setMenu(null)
             }}
           >
-            {lost.includes(menu.id) ? 'Have Access' : 'Lost Access'}
+          {lost.includes(menu.id) ? 'Have Access' : 'Lost Access'}
+        </li>
+      </ul>
+      )}
+      {edgeMenu && (
+        <ul
+          className="absolute bg-white border rounded shadow text-sm"
+          style={{top:edgeMenu.y,left:edgeMenu.x}}
+        >
+          <li
+            className="px-3 py-1 cursor-pointer hover:bg-gray-100"
+            onClick={()=>handleDeleteEdge(edgeMenu.edge)}
+          >
+            Delete Edge
           </li>
         </ul>
       )}

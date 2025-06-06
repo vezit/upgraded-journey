@@ -205,8 +205,15 @@ function DiagramContent() {
   )
 
   const visibleNodes = nodesWithLock.filter(n => !hidden.includes(n.id))
+  const validNodeIds = new Set(visibleNodes.map(n => n.id))
   const visibleEdges = edges
-    .filter(e => !hidden.includes(e.source) && !hidden.includes(e.target))
+    .filter(
+      e =>
+        validNodeIds.has(e.source) &&
+        validNodeIds.has(e.target) &&
+        !hidden.includes(e.source) &&
+        !hidden.includes(e.target),
+    )
     .map(e =>
       hoveredEdgeId === e.id ? { ...e, animated: true } : { ...e, animated: false }
     )

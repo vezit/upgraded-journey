@@ -333,6 +333,9 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     groupNodes[fid] = groupNode
 
     if (def.parentId) {
+      if (!folderChildren[def.parentId]) {
+        folderChildren[def.parentId] = []
+      }
       folderChildren[def.parentId].push(groupNode)
     }
   })

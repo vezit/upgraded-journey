@@ -5,6 +5,7 @@ import { useHiddenStore } from '@/contexts/HiddenStore'
 
 import { useHoverStore } from '@/contexts/HoverStore'
 import { useLockedStore } from '@/contexts/LockedStore'
+import { useLostStore } from '@/contexts/LostStore'
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -36,10 +37,12 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const [selected, setSelected] = useState<number[]>([])
   const [query, setQuery] = useState('')
   const [width, setWidth] = useState(320)
+  const [vaultMenu, setVaultMenu] = useState<string | null>(null)
 
   const { hoveredId, setHoveredId } = useHoverStore()
   const { hidden, hide, unhide } = useHiddenStore()
   const { locked, lock, unlock } = useLockedStore()
+  const { lost, markLost, clearLost, markAll } = useLostStore()
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -90,6 +93,33 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleLock = (id: string) => {
     if (locked.includes(id)) unlock([id])
     else lock([id])
+  }
+
+  const idsForVault = (name: string) =>
+    items.filter((it: any) => (it.vault || 'None') === name).map((it: any) => `item-${it.id}`)
+
+  const toggleVaultVisibility = (name: string) => {
+    const ids = idsForVault(name)
+    if (!ids.length) return
+    const shouldHide = ids.some(id => !hidden.includes(id))
+    if (shouldHide) hide(ids)
+    else unhide(ids)
+  }
+
+  const toggleVaultLock = (name: string) => {
+    const ids = idsForVault(name)
+    if (!ids.length) return
+    const shouldLock = ids.some(id => !locked.includes(id))
+    if (shouldLock) lock(ids)
+    else unlock(ids)
+  }
+
+  const toggleVaultLost = (name: string) => {
+    const ids = idsForVault(name)
+    if (!ids.length) return
+    const allLost = ids.every(id => lost.includes(id))
+    if (allLost) ids.forEach(id => clearLost(id))
+    else markAll(ids)
   }
 
   // sort indexes so recovery methods appear first in the list
@@ -177,94 +207,169 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                 </button>
               </div>
             </th>
-            <th className="text-left">Vault</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {items
-            .filter((item: any) =>
-              item.name?.toLowerCase().includes(query.toLowerCase())
-            )
-            .map((item: any, index: number) => {
-
-            const uri = item.login?.uris?.[0]?.uri
-            const domain = domainFrom(uri)
-            const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
-            const isRecovery = item.fields?.some(
-              (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
-            )
-
-            const rowId = `item-${item.id}`
-            const highlighted = hoveredId === rowId
-
-            return (
-              <tr
-                key={item.id}
-                className={`bg-white hover:bg-gray-50 border-t cursor-pointer ${
-                  highlighted ? 'bg-indigo-50' : ''
-                } ${hidden.includes(rowId) ? 'opacity-50' : ''}`}
-                onClick={() => onEdit(index)}
-                onMouseEnter={() => setHoveredId(rowId)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                <td className="px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(index)}
-                    onChange={e => {
-                      e.stopPropagation()
-                      toggleSelect(index)
-                    }}
-                  />
-                </td>
-                <td className="flex items-center gap-3 py-3 px-4">
-                  <img
-                    src={logo}
-                    alt=""
-                    className="w-5 h-5"
-                    onError={e => { (e.currentTarget as HTMLImageElement).src = '/img/default.svg' }}
-                  />
-                  <div>
-                    <div className="font-medium text-sm text-gray-800">{item.name}</div>
-                    {isRecovery && (
-                      <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
-                    )}
-                  </div>
-                </td>
-                <td className="text-sm text-gray-700">{item.vault || 'None'}</td>
-                <td className="text-right px-4">
-                  <button
-                    onClick={e => {
-                      e.stopPropagation()
-                      toggleVisibility(rowId)
-                    }}
-                    className="mr-2"
-                  >
-                    {hidden.includes(rowId) ? (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    )}
-                  </button>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation()
-                      toggleLock(rowId)
-                    }}
-                    className="mr-2"
-                  >
-                    {locked.includes(rowId) ? (
-                      <LockClosedIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    ) : (
-                      <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                    )}
-                  </button>
-                  <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 inline" />
-                </td>
-              </tr>
-            )
-          })}
+          {(() => {
+            const groups: Record<string, { item: any; index: number }[]> = {}
+            items.forEach((it: any, idx: number) => {
+              const name = it.vault || 'None'
+              if (!groups[name]) groups[name] = []
+              groups[name].push({ item: it, index: idx })
+            })
+            const order = (vault.vaults || []) as string[]
+            const names = [...order.filter(n => groups[n]), ...Object.keys(groups).filter(n => !order.includes(n))]
+            return names.map(name => {
+              const groupItems = groups[name].filter(({ item }) =>
+                item.name?.toLowerCase().includes(query.toLowerCase())
+              )
+              if (!groupItems.length) return null
+              const ids = groupItems.map(({ item }) => `item-${item.id}`)
+              const allHidden = ids.every(id => hidden.includes(id))
+              const allLocked = ids.every(id => locked.includes(id))
+              const allLost = ids.every(id => lost.includes(id))
+              return (
+                <>
+                  <tr key={`vault-${name}`} className="bg-gray-100">
+                    <td colSpan={3} className="px-4 py-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-gray-700">{name}</span>
+                        <div className="flex items-center">
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              toggleVaultVisibility(name)
+                            }}
+                            className="mr-2"
+                          >
+                            {allHidden ? (
+                              <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            )}
+                          </button>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              toggleVaultLock(name)
+                            }}
+                            className="mr-2"
+                          >
+                            {allLocked ? (
+                              <LockClosedIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            ) : (
+                              <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            )}
+                          </button>
+                          <div className="relative inline-block">
+                            <button
+                              onClick={e => {
+                                e.stopPropagation()
+                                setVaultMenu(vaultMenu === name ? null : name)
+                              }}
+                            >
+                              <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            </button>
+                            {vaultMenu === name && (
+                              <ul className="absolute right-0 bg-white border rounded shadow text-sm">
+                                <li
+                                  className="px-3 py-1 cursor-pointer hover:bg-gray-100"
+                                  onClick={() => {
+                                    toggleVaultLost(name)
+                                    setVaultMenu(null)
+                                  }}
+                                >
+                                  {allLost ? 'Have Access' : 'Lost Access'}
+                                </li>
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {groupItems.map(({ item, index }) => {
+                    const uri = item.login?.uris?.[0]?.uri
+                    const domain = domainFrom(uri)
+                    const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+                    const isRecovery = item.fields?.some(
+                      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
+                    )
+                    const rowId = `item-${item.id}`
+                    const highlighted = hoveredId === rowId
+                    return (
+                      <tr
+                        key={item.id}
+                        className={`bg-white hover:bg-gray-50 border-t cursor-pointer ${
+                          highlighted ? 'bg-indigo-50' : ''
+                        } ${hidden.includes(rowId) ? 'opacity-50' : ''}`}
+                        onClick={() => onEdit(index)}
+                        onMouseEnter={() => setHoveredId(rowId)}
+                        onMouseLeave={() => setHoveredId(null)}
+                      >
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(index)}
+                            onChange={e => {
+                              e.stopPropagation()
+                              toggleSelect(index)
+                            }}
+                          />
+                        </td>
+                        <td className="flex items-center gap-3 py-3 px-4">
+                          <img
+                            src={logo}
+                            alt=""
+                            className="w-5 h-5"
+                            onError={e => {
+                              (e.currentTarget as HTMLImageElement).src = '/img/default.svg'
+                            }}
+                          />
+                          <div>
+                            <div className="font-medium text-sm text-gray-800">{item.name}</div>
+                            {isRecovery && (
+                              <span className="text-xs font-semibold text-purple-600">Recovery Node</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-right px-4">
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              toggleVisibility(rowId)
+                            }}
+                            className="mr-2"
+                          >
+                            {hidden.includes(rowId) ? (
+                              <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            ) : (
+                              <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            )}
+                          </button>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              toggleLock(rowId)
+                            }}
+                            className="mr-2"
+                          >
+                            {locked.includes(rowId) ? (
+                              <LockClosedIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            ) : (
+                              <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            )}
+                          </button>
+                          <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 inline" />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </>
+              )
+            })
+          })()}
         </tbody>
       </table>
       </div>

@@ -57,9 +57,11 @@ function DiagramContent() {
   const [lostId, setLostId] = useState<string|null>(null)
   const isInteractive = useStore((s) => s.nodesDraggable && s.nodesConnectable && s.elementsSelectable)
   const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
+  const zIndexRef = useRef<Record<string,number>>(storage.loadZIndex())
 
   useEffect(() => {
     positionsRef.current = storage.loadPositions()
+    zIndexRef.current = storage.loadZIndex()
   }, [vault])
 
   const handleEdit = (id: string) => {
@@ -67,6 +69,19 @@ function DiagramContent() {
     const rawId = id.replace(/^item-/, '')
     const idx = vault.items?.findIndex((i:any)=> String(i.id)===rawId)
     if(idx!==undefined && idx>-1) setEditIndex(idx)
+  }
+
+  const changeZ = (id:string, delta:number)=>{
+    const map = { ...zIndexRef.current }
+    map[id] = (map[id] || 0) + delta
+    zIndexRef.current = map
+    storage.saveZIndex(map)
+    const updated = nodes.map(n=>{
+      if(n.id!==id) return n
+      const current = Number((n.style as any)?.zIndex) || 0
+      return { ...n, style: { ...(n.style||{}), zIndex: current + delta } }
+    })
+    setGraph({ nodes: updated, edges })
   }
 
   const openMenu = (e: React.MouseEvent, n: Node) => {
@@ -183,6 +198,18 @@ function DiagramContent() {
             onClick={()=>{handleEdit(menu.id);setMenu(null)}}
           >
             Edit Item
+          </li>
+          <li
+            className="px-3 py-1 cursor-pointer hover:bg-gray-100"
+            onClick={()=>{changeZ(menu.id,-1);setMenu(null)}}
+          >
+            Move Backward
+          </li>
+          <li
+            className="px-3 py-1 cursor-pointer hover:bg-gray-100"
+            onClick={()=>{changeZ(menu.id,1);setMenu(null)}}
+          >
+            Move Forward
           </li>
           <li
             className="px-3 py-1 cursor-pointer hover:bg-gray-100"

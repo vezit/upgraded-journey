@@ -1,6 +1,6 @@
 import type { Edge, Node } from 'reactflow'
 import { Position } from 'reactflow'
-import { loadPositions } from './storage'
+import { loadPositions, loadZIndex } from './storage'
 
 const orientEdges = (nodes: Node[], edges: Edge[]): Edge[] => {
   const map = new Map(nodes.map(n => [n.id, n.position.y]))
@@ -218,6 +218,15 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
   nodes.forEach(n => {
     const pos = saved[n.id]
     if(pos) n.position = pos
+  })
+
+  // -----------------------------------------------------------------------
+  // Apply saved z-index values
+  // -----------------------------------------------------------------------
+  const zmap = loadZIndex()
+  nodes.forEach(n => {
+    const z = zmap[n.id]
+    if(z!==undefined) n.style = { ...(n.style||{}), zIndex: z }
   })
 
   // -----------------------------------------------------------------------

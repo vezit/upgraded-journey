@@ -1,5 +1,6 @@
 'use client'
 import { create } from 'zustand'
+import { encryptString, decryptString } from '../lib/hiddenCrypto'
 
 // ---------------------------------------------------------------------------
 // Helper to guess a domain from a service name
@@ -47,6 +48,8 @@ interface VaultState {
     field: 'name' | 'username' | 'password' | 'totp' | 'uri' | 'notes',
     value: string
   ) => void
+  secureItems: (ids: string[], key: string) => Promise<void>
+  revealItems: (ids: string[], key: string) => Promise<void>
 }
 
 export const useVault = create<VaultState>((set, get) => ({
@@ -310,6 +313,60 @@ export const useVault = create<VaultState>((set, get) => ({
     }
 
     items[idx] = item
+    set({ vault: { ...v, items } })
+  },
+  secureItems: async (ids, key) => {
+    const v = get().vault
+    if (!v || !v.items) return
+    const items = [...v.items]
+    for (const id of ids) {
+      const rawId = id.replace(/^item-/, '')
+      const idx = items.findIndex(i => String(i.id) === rawId)
+      if (idx === -1) continue
+      const item = { ...items[idx] }
+      const data = {
+        username: item.login?.username,
+        password: item.login?.password,
+        totp: item.login?.totp,
+        notes: item.notes,
+      }
+      const enc = await encryptString(JSON.stringify(data), key)
+      item.fields = item.fields ? [...item.fields] : []
+      const existing = item.fields.find((f: any) => f.name === 'vaultdiagram-hidden-data')
+      if (existing) existing.value = await enc
+      else item.fields.push({ name: 'vaultdiagram-hidden-data', value: await enc, type: 0 })
+      if (item.login) {
+        delete item.login.username
+        delete item.login.password
+        delete item.login.totp
+      }
+      delete item.notes
+      items[idx] = item
+    }
+    set({ vault: { ...v, items } })
+  },
+  revealItems: async (ids, key) => {
+    const v = get().vault
+    if (!v || !v.items) return
+    const items = [...v.items]
+    for (const id of ids) {
+      const rawId = id.replace(/^item-/, '')
+      const idx = items.findIndex(i => String(i.id) === rawId)
+      if (idx === -1) continue
+      const item = { ...items[idx] }
+      const fieldIdx = item.fields?.findIndex((f: any) => f.name === 'vaultdiagram-hidden-data')
+      if (fieldIdx === undefined || fieldIdx < 0) continue
+      const enc = item.fields![fieldIdx].value
+      const plainStr = await decryptString(enc, key)
+      const plain = JSON.parse(plainStr)
+      item.login = item.login || {}
+      if (plain.username) item.login.username = plain.username
+      if (plain.password) item.login.password = plain.password
+      if (plain.totp) item.login.totp = plain.totp
+      if (plain.notes) item.notes = plain.notes
+      item.fields!.splice(fieldIdx, 1)
+      items[idx] = item
+    }
     set({ vault: { ...v, items } })
   },
 }))

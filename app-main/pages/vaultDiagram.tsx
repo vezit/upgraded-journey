@@ -27,12 +27,13 @@ export default function Vault() {
   const [shrinkGroups, setShrinkGroups] = useState(false)
 
 
-  const { clear } = useHiddenStore()
+  const { clear, regenerateKey } = useHiddenStore()
 
   const handleLoad = (data: any) => {
     setVault(data)
     setGraph(parseVault(data, shrinkGroups))
     clear()
+    regenerateKey()
     storage.saveVault(JSON.stringify(data))
   }
 

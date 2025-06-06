@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
 
@@ -79,7 +79,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleHideSelected = () => {
     if (!items.length) return
     const ids = selected.map(i => `item-${items[i].id}`)
-    const shouldHide = ids.some(id => !hidden.includes(id))
+    const shouldHide = ids.some((id: string) => !hidden.includes(id))
     if (shouldHide) hide(ids)
     else unhide(ids)
     setSelected([])
@@ -101,7 +101,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleVaultVisibility = (name: string) => {
     const ids = idsForVault(name)
     if (!ids.length) return
-    const shouldHide = ids.some(id => !hidden.includes(id))
+    const shouldHide = ids.some((id: string) => !hidden.includes(id))
     if (shouldHide) hide(ids)
     else unhide(ids)
   }
@@ -109,7 +109,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleVaultLock = (name: string) => {
     const ids = idsForVault(name)
     if (!ids.length) return
-    const shouldLock = ids.some(id => !locked.includes(id))
+    const shouldLock = ids.some((id: string) => !locked.includes(id))
     if (shouldLock) lock(ids)
     else unlock(ids)
   }
@@ -117,8 +117,8 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const toggleVaultLost = (name: string) => {
     const ids = idsForVault(name)
     if (!ids.length) return
-    const allLost = ids.every(id => lost.includes(id))
-    if (allLost) ids.forEach(id => clearLost(id))
+    const allLost = ids.every((id: string) => lost.includes(id))
+    if (allLost) ids.forEach((id: string) => clearLost(id))
     else markAll(ids)
   }
 
@@ -230,7 +230,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
               const allLocked = ids.every(id => locked.includes(id))
               const allLost = ids.every(id => lost.includes(id))
               return (
-                <>
+                <React.Fragment key={`group-${name}`}>
                   <tr key={`vault-${name}`} className="bg-gray-100">
                     <td colSpan={3} className="px-4 py-2">
                       <div className="flex items-center justify-between">
@@ -366,7 +366,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                       </tr>
                     )
                   })}
-                </>
+                </React.Fragment>
               )
             })
           })()}

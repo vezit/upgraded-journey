@@ -1,5 +1,21 @@
 import type { Edge, Node } from 'reactflow'
+import { Position } from 'reactflow'
 import { loadPositions } from './storage'
+
+const orientEdges = (nodes: Node[], edges: Edge[]): Edge[] => {
+  const map = new Map(nodes.map(n => [n.id, n.position.y]))
+  return edges.map(e => {
+    const srcY = map.get(e.source)
+    const tgtY = map.get(e.target)
+    if (srcY === undefined || tgtY === undefined) return e
+    const sourceAbove = srcY <= tgtY
+    return {
+      ...e,
+      sourcePosition: sourceAbove ? Position.Bottom : Position.Top,
+      targetPosition: sourceAbove ? Position.Top : Position.Bottom,
+    }
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Helper utilities
@@ -303,7 +319,8 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     }
   })
 
-  return { nodes, edges }
+  const oriented = orientEdges(nodes, edges)
+  return { nodes, edges: oriented }
 }
 
 export type VaultGraph = ReturnType<typeof parseVault>

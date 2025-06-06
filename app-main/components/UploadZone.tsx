@@ -35,7 +35,7 @@ export default function UploadZone({ onLoad }:{ onLoad:(json:any)=>void }){
       <div className="mt-2 text-center">
         <label className="mr-2">Import as</label>
         <select value={category} onChange={e=>setCategory(e.target.value as VaultCategory)} className="border px-2 py-1">
-          <option value="personal">vault.reipur.dk</option>
+          <option value="personal">Beginner Template</option>
           <option value="organization">Organization</option>
         </select>
         <input

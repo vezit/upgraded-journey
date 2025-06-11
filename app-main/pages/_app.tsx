@@ -1,7 +1,9 @@
 // pages/_app.tsx
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { SessionContextProvider } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
 import { pageview } from '@/lib/analytics'
 import { useGraph } from '@/contexts/GraphStore'
@@ -15,6 +17,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const { setGraph } = useGraph()
   const { setVault } = useVault()
   const router = useRouter()
+  const [supabase] = useState(() => createBrowserSupabaseClient())
   useEffect(() => {
     const raw = loadVault()
     if (raw) {
@@ -31,11 +34,11 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [router])
   return (
-    <>
+    <SessionContextProvider supabaseClient={supabase}>
       <AlphaBanner />
       <Header />
       <Component {...pageProps} />
-    </>
+    </SessionContextProvider>
   )
 
 }

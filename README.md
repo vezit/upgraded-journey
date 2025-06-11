@@ -86,3 +86,7 @@ Set `NEXT_PUBLIC_OFFLINE=true` in your `.env.local` file to disable external net
 
 Bitwarden, Clearbit, Supabase and OpenAI integrations are optional conveniences and are not affiliated with this project.
 
+## Invoicing & Login
+
+Visit `/login` and enter your e-mail address to receive a Supabase magic link. After confirming the link you can access `/invoice` to create PDFs that are stored in Supabase Storage.
+

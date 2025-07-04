@@ -1,8 +1,17 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import { supabaseConfigured } from '@/lib/supabaseClient'
 
 export default function Login() {
+  if (!supabaseConfigured) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="p-4 bg-white rounded shadow">Supabase is not configured.</p>
+      </div>
+    )
+  }
+
   const supabase = useSupabaseClient()
   const router   = useRouter()
   const [email, setEmail] = useState('')

@@ -12,6 +12,7 @@ import { loadVault } from '@/lib/storage'
 import { parseVault } from '@/lib/parseVault'
 import AlphaBanner from '@/components/AlphaBanner'
 import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 export default function App({ Component, pageProps }: AppProps) {
   const { setGraph } = useGraph()
@@ -38,6 +39,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <AlphaBanner />
       <Header />
       <Component {...pageProps} />
+      <Footer />
     </SessionContextProvider>
   )
 

@@ -2,8 +2,17 @@ import { useSessionContext } from '@supabase/auth-helpers-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { useState } from 'react'
 import currency from 'currency.js'
+import { supabaseConfigured } from '@/lib/supabaseClient'
 
 export default function InvoicePage(){
+  if (!supabaseConfigured) {
+    return (
+      <div className="max-w-3xl mx-auto p-4">
+        <p>Supabase is not configured.</p>
+      </div>
+    )
+  }
+
   const { session } = useSessionContext()
   const { register, control, handleSubmit, watch } = useForm({
     defaultValues:{

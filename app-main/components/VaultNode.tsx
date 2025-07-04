@@ -54,11 +54,7 @@ export default function VaultNode({ id, data }: NodeProps) {
       )}
 
       {/* handles */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        isValidConnection={() => data.isRecovery}
-      />
+      <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   )

@@ -22,6 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const [supabase] = useState(() =>
     supabaseConfigured ? createPagesBrowserClient() : null
   )
+
   useEffect(() => {
     const raw = loadVault()
     if (raw) {
@@ -37,15 +38,21 @@ export default function App({ Component, pageProps }: AppProps) {
       router.events.off('routeChangeComplete', handleRouteChange)
     }
   }, [router])
+
   const content = (
     <>
       <AlphaBanner />
       <Header />
       <Component {...pageProps} />
       <Footer />
+    </>
+  )
+
+  return supabaseConfigured ? (
+    <SessionContextProvider supabaseClient={supabase!}>
+      {content}
     </SessionContextProvider>
   ) : (
     content
   )
-
 }

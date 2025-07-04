@@ -1,8 +1,13 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse, type NextRequest } from 'next/server'
+import { supabaseConfigured } from '@/lib/supabaseClient'
 
 export async function middleware(req: NextRequest) {
   const res  = NextResponse.next()
+  if (!supabaseConfigured) {
+    return res
+  }
+
   const supa = createMiddlewareClient({ req, res })
   const {
     data: { session },

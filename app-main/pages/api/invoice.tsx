@@ -1,11 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { supabaseConfigured } from '@/lib/supabaseClient'
 import { InvoicePDF } from '@/templates/InvoicePDF'
 import { renderToStream } from '@react-pdf/renderer'
 import React from 'react'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
+  if (!supabaseConfigured) {
+    return res.status(501).json({ error: 'Supabase not configured' })
+  }
+
   const supa = createServerSupabaseClient({ req, res })
   const { data: { session } } = await supa.auth.getSession()
   if (!session) return res.status(401).json({ error: 'no session' })

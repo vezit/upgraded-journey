@@ -2,8 +2,9 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { useEffect, useState } from 'react'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { SessionContextProvider } from '@supabase/auth-helpers-react'
+import { supabaseConfigured } from '@/lib/supabaseClient'
 import { useRouter } from 'next/router'
 import { pageview } from '@/lib/analytics'
 import { useGraph } from '@/contexts/GraphStore'
@@ -17,7 +18,9 @@ export default function App({ Component, pageProps }: AppProps) {
   const { setGraph } = useGraph()
   const { setVault } = useVault()
   const router = useRouter()
-  const [supabase] = useState(() => createBrowserSupabaseClient())
+  const [supabase] = useState(() =>
+    supabaseConfigured ? createPagesBrowserClient() : null
+  )
   useEffect(() => {
     const raw = loadVault()
     if (raw) {
@@ -33,12 +36,20 @@ export default function App({ Component, pageProps }: AppProps) {
       router.events.off('routeChangeComplete', handleRouteChange)
     }
   }, [router])
-  return (
-    <SessionContextProvider supabaseClient={supabase}>
+  const content = (
+    <>
       <AlphaBanner />
       <Header />
       <Component {...pageProps} />
+    </>
+  )
+
+  return supabaseConfigured ? (
+    <SessionContextProvider supabaseClient={supabase!}>
+      {content}
     </SessionContextProvider>
+  ) : (
+    content
   )
 
 }

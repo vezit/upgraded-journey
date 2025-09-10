@@ -1,5 +1,5 @@
 import type { Edge, Node } from 'reactflow'
-import { loadPositions, loadZIndex } from './storage'
+import { loadZIndex } from './storage'
 
 const orientEdges = (_nodes: Node[], edges: Edge[]): Edge[] => edges
 
@@ -55,6 +55,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
 
   // Slug → item‑id lookup for JSON‑based recovery mapping
   const slugToId: Record<string, string> = {}
+  const positionMap: Record<string, { x: number; y: number }> = {}
 
   // -------------------------------------------------------------------------
   // Pass 1: create all nodes and collect slugs
@@ -103,10 +104,15 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
       row++
     }
 
+    const position = diag.position && typeof diag.position.x === 'number' && typeof diag.position.y === 'number'
+      ? diag.position
+      : { x, y }
+    if (diag.position) positionMap[itemId] = diag.position
+
     nodes.push({
       id: itemId,
       type: 'vault',
-      position: { x, y },
+      position,
       data: {
         label: item.name,
         logoUrl: customLogoUrl || logoFor(dom),
@@ -149,11 +155,10 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
   }
 
   // -----------------------------------------------------------------------
-  // Apply saved positions from local storage if available
+  // Apply saved positions from vault data if available
   // -----------------------------------------------------------------------
-  const saved = loadPositions()
   nodes.forEach(n => {
-    const pos = saved[n.id]
+    const pos = positionMap[n.id]
     if(pos) n.position = pos
   })
 

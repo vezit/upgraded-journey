@@ -20,7 +20,7 @@ const domainFrom = (raw: string | undefined) => {
 }
 
 const logoFor = (domain?: string) =>
-  domain ? `https://logo.clearbit.com/${domain}?size=80` : '/img/default.svg'
+  domain ? `https://${domain}/favicon.ico` : '/img/default.svg'
 
 // ---------------------------------------------------------------------------
 // parseVault – converts a Bitwarden export into nodes + edges for React Flow

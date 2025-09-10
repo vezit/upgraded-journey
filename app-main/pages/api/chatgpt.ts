@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 },
                 "fields": [
                   {"name": "vaultdiagram-id", "value": "service-id", "type": 0},
-                  {"name": "vaultdiagram-logo-url", "value": "https://logo.clearbit.com/service.com?size=80", "type": 0}
+                  {"name": "vaultdiagram-logo-url", "value": "https://service.com/favicon.ico", "type": 0}
                 ]
               }
             ]

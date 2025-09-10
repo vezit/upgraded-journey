@@ -30,7 +30,7 @@ const domainFrom = (raw?: string) => {
 }
 
 const logoFor = (domain?: string) =>
-  domain ? `https://logo.clearbit.com/${domain}?size=80` : '/img/default.svg'
+  domain ? `https://${domain}/favicon.ico` : '/img/default.svg'
 
 
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {

@@ -73,8 +73,13 @@ function fallbackDetect(headers: string[]): { accountCol: string | null; passwor
   return { accountCol: null, passwordCol: null };
 }
 
-function parseODSContent(content: string): Account[] {
+function parseFileContent(content: string): Account[] {
   try {
+    // Check if this might be a binary ODS file
+    if (content.includes('PK\x03\x04') || content.includes('mimetypeapplication/vnd.oasis.opendocument.spreadsheet')) {
+      throw new Error('This appears to be a binary ODS file. Please export/save your spreadsheet as CSV format and try again.');
+    }
+
     // Parse tab-separated or comma-separated content
     const lines = content.split('\n').filter(line => line.trim());
     
@@ -82,14 +87,48 @@ function parseODSContent(content: string): Account[] {
       throw new Error('File appears to be empty');
     }
 
-    // Try tab-separated first, then comma-separated
+    // Detect delimiter by checking the first few lines
     let delimiter = '\t';
-    if (lines[0].split('\t').length === 1 && lines[0].includes(',')) {
+    const firstLine = lines[0];
+    const tabCount = (firstLine.match(/\t/g) || []).length;
+    const commaCount = (firstLine.match(/,/g) || []).length;
+    const semicolonCount = (firstLine.match(/;/g) || []).length;
+    
+    if (commaCount > tabCount && commaCount > semicolonCount) {
       delimiter = ',';
+    } else if (semicolonCount > tabCount && semicolonCount > commaCount) {
+      delimiter = ';';
     }
 
-    // Assume first line is headers
-    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+    // Parse CSV properly handling quoted fields
+    const parseCSVLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++; // Skip next quote
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === delimiter && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    };
+
+    // Parse headers
+    const headers = parseCSVLine(lines[0]);
     
     // Detect columns
     let { accountCol, passwordCol } = detectColumns(headers);
@@ -101,7 +140,7 @@ function parseODSContent(content: string): Account[] {
     }
 
     if (!accountCol || !passwordCol) {
-      throw new Error(`Could not detect required columns. Available columns: ${headers.join(', ')}`);
+      throw new Error(`Could not detect required columns.\nAvailable columns: ${headers.join(', ')}\nTip: Make sure your file has columns named 'account'/'username' and 'password', or export as CSV with proper headers.`);
     }
 
     const accountIndex = headers.indexOf(accountCol);
@@ -111,16 +150,22 @@ function parseODSContent(content: string): Account[] {
     
     // Process data rows
     for (let i = 1; i < lines.length; i++) {
-      const row = lines[i].split(delimiter).map(cell => cell.trim().replace(/"/g, ''));
+      if (!lines[i].trim()) continue; // Skip empty lines
+      
+      const row = parseCSVLine(lines[i]);
       
       if (row.length > Math.max(accountIndex, passwordIndex)) {
         const account = (row[accountIndex] || '').trim();
         const password = (row[passwordIndex] || '').trim();
         
-        if (account && password) {
+        if (account && password && account !== 'undefined' && password !== 'undefined') {
           accounts.push({ account, password });
         }
       }
+    }
+
+    if (accounts.length === 0) {
+      throw new Error('No valid account/password pairs found. Please check your file format and ensure it contains data rows.');
     }
 
     return accounts;
@@ -140,10 +185,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const accounts = parseODSContent(content);
+    // Log the first few characters to help debug
+    console.log('Content preview:', content.substring(0, 200));
+    console.log('Content length:', content.length);
+    
+    const accounts = parseFileContent(content);
     
     // Format output similar to the Python script
-    const output = accounts.map(({ account, password }) => `${account}: ${password}`).join('\n');
+    const output = accounts.map(({ account, password }: Account) => `${account}: ${password}`).join('\n');
     
     res.status(200).json({ 
       result: output,

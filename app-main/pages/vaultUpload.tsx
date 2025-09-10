@@ -111,10 +111,13 @@ export default function VaultUpload() {
             <div>
               <input 
                 type="file" 
-                accept=".odf" 
+                accept=".csv,.tsv,.txt,.ods" 
                 onChange={handleFileChange}
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
+              <p className="mt-2 text-xs text-gray-500">
+                Supported formats: CSV, TSV, TXT. For ODS files, please export as CSV first.
+              </p>
               {fileName && (
                 <p className="mt-2 text-sm text-gray-600">Selected: {fileName}</p>
               )}

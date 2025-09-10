@@ -31,6 +31,7 @@ interface Service {
   keywords: string[]
   category: string
   icon: string
+  domain: string
 }
 
 interface VaultItem {
@@ -107,6 +108,7 @@ export default function VaultOnboarding() {
   const addServiceToVault = (service: Service) => {
     if (isServiceAdded(service.name)) return
 
+    const vaultId = service.name.toLowerCase().replace(/\s+/g, '-')
     const newItem: VaultItem = {
       id: crypto.randomUUID(),
       type: 1, // Login type
@@ -114,12 +116,27 @@ export default function VaultOnboarding() {
       login: {
         username: '',
         password: '',
-        uris: [{ uri: '', match: null }]
+        uris: [{ uri: `https://${service.domain}`, match: null }]
       },
       fields: [
         {
           name: 'vaultdiagram-id',
-          value: service.name.toLowerCase().replace(/\s+/g, '-'),
+          value: vaultId,
+          type: 0
+        },
+        {
+          name: 'vaultdiagram-logo-url',
+          value: service.icon,
+          type: 0
+        },
+        {
+          name: 'vaultdiagram-recovery-map',
+          value: '{}',
+          type: 0
+        },
+        {
+          name: 'vaultdiagram-2fa-map',
+          value: '{}',
           type: 0
         }
       ],
@@ -176,12 +193,16 @@ export default function VaultOnboarding() {
                 !commonServices.some(s => s.name.toLowerCase() === name.toLowerCase())
               )
               .slice(0, 4)
-              .map((name: string) => ({
-                name,
-                keywords: [name.toLowerCase()],
-                category: 'Suggested',
-                icon: `https://www.google.com/s2/favicons?domain=${name.toLowerCase().replace(/\s+/g, '')}.com&sz=32`
-              }))
+              .map((name: string) => {
+                const domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`
+                return {
+                  name,
+                  keywords: [name.toLowerCase()],
+                  category: 'Suggested',
+                  icon: `https://logo.clearbit.com/${domain}`,
+                  domain
+                }
+              })
             
             setSuggestedServices(newSuggestions)
           }

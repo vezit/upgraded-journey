@@ -1,7 +1,6 @@
 import VaultDiagram from '@/components/VaultDiagram'
 import ChatInterface from '@/components/ChatInterface'
 import ExportButton from '@/components/ExportButton'
-import VersionHistoryModal from '@/components/VersionHistoryModal'
 import VaultItemList from '@/components/VaultItemList'
 import EditItemModal from '@/components/EditItemModal'
 import { useState, useEffect } from 'react'
@@ -20,11 +19,13 @@ export default function Vault() {
 
   const [showList, setShowList] = useState(true)
   const [showChat, setShowChat] = useState(true)
-  const [showHistory, setShowHistory] = useState(false)
   const [shrinkGroups, setShrinkGroups] = useState(false)
 
   // Redirect to onboarding if no vault exists
   useEffect(() => {
+    // Clean up legacy version history data
+    storage.cleanupLegacyHistory()
+    
     if (!vault) {
       const savedVault = storage.loadVault()
       if (savedVault) {
@@ -43,12 +44,6 @@ export default function Vault() {
       {vault && (
         <div className="flex gap-2">
           <ExportButton />
-          <button
-            onClick={() => setShowHistory(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded self-start"
-          >
-            Version History
-          </button>
           <label className="flex items-center gap-1 text-sm">
             <input
               type="checkbox"
@@ -75,7 +70,6 @@ export default function Vault() {
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
       )}
       {creating && <EditItemModal onClose={() => setCreating(false)} />}
-      {showHistory && <VersionHistoryModal onClose={() => setShowHistory(false)} />}
     </div>
   )
 }

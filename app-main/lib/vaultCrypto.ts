@@ -128,8 +128,10 @@ export const parseCipherString = (str: string): ParsedCipherString => {
 // AES-256-CBC decrypt helper
 //---------------------------------------------------------------
 async function aesCbcDecrypt(key: Uint8Array, iv: Uint8Array, ct: Uint8Array): Promise<Uint8Array> {
-  const cryptoKey = await subtle.importKey('raw', key, 'AES-CBC', false, ['decrypt']);
-  const pt = new Uint8Array(await subtle.decrypt({ name: 'AES-CBC', iv }, cryptoKey, ct));
+  const cryptoKey = await subtle.importKey('raw', key as BufferSource, 'AES-CBC', false, ['decrypt']);
+  const pt = new Uint8Array(
+    await subtle.decrypt({ name: 'AES-CBC', iv: iv as BufferSource }, cryptoKey, ct as BufferSource)
+  );
   return pt.slice(0, pt.length - pt[pt.length - 1]); // strip PKCS#7 padding
 }
 
@@ -137,8 +139,8 @@ async function aesCbcDecrypt(key: Uint8Array, iv: Uint8Array, ct: Uint8Array): P
 // HMAC-SHA256
 //---------------------------------------------------------------
 async function hmacSha256(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
-  const k = await subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return new Uint8Array(await subtle.sign('HMAC', k, data));
+  const k = await subtle.importKey('raw', key as BufferSource, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return new Uint8Array(await subtle.sign('HMAC', k, data as BufferSource));
 }
 
 //---------------------------------------------------------------

@@ -6,9 +6,7 @@ export interface VaultItem {
   /** Bitwarden cipher type (1 = login) */
   type: number
   name: string
-  vault?: string
   folderId?: string
-  organizationId?: string
   login: {
     username?: string
     password?: string
@@ -20,24 +18,17 @@ export interface VaultItem {
 export interface VaultData {
   items: VaultItem[]
   folders?: { id: string; name: string; parentId?: string }[]
-  vaults?: string[]
-  organizations?: { id: string; name: string }[]
 }
 
 const personalTemplate: VaultData = {
-    vaults: ['My Vault', 'Family (organization)', '2favault.reipur.dk'],
-    organizations: [{ id: 'family-org', name: 'Family (organization)' }],
     folders: [
       { id: 'personal', name: 'Beginner Template' },
-      { id: 'family', name: 'Family', parentId: 'personal' },
-      { id: '2favault.reipur.dk', name: '2favault.reipur.dk' },
     ],
     items: [
       {
         id: '5812e279-62f3-4cd6-a3b2-e01058b7c3fb',
         type: 1,
         name: 'Facebook',
-        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -54,7 +45,6 @@ const personalTemplate: VaultData = {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
         name: 'Gmail',
-        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -71,7 +61,6 @@ const personalTemplate: VaultData = {
         id: 'a17ed712-5dcc-4b78-b9a7-9109a3567845',
         type: 1,
         name: 'LinkedIn',
-        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -88,9 +77,7 @@ const personalTemplate: VaultData = {
         id: 'f9e5bffb-7fdc-4ec0-ae19-390940c730a1',
         type: 1,
         name: 'Netflix',
-        vault: 'Family (organization)',
-        folderId: 'family',
-        organizationId: 'family-org',
+        folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
           password: '',
@@ -105,6 +92,7 @@ const personalTemplate: VaultData = {
         id: '4a88069c-df55-404b-8421-8d9ad7092b11',
         type: 1,
         name: 'Phone Pixel 7a',
+        folderId: 'personal',
         login: {
           uris: [{ uri: 'https://www.android.com/', match: null }],
         },
@@ -120,6 +108,7 @@ const personalTemplate: VaultData = {
         id: '01c1349c-35c0-4c54-ae82-42df42a5786b',
         type: 1,
         name: '+45 12345678',
+        folderId: 'personal',
         login: {
           uris: [{ uri: 'tel:+4512345678', match: null }],
         },
@@ -134,7 +123,6 @@ const personalTemplate: VaultData = {
         id: '5bdd19e4-9973-41a5-9b5f-08e54ec42431',
         type: 1,
         name: 'Vaultwarden Dev',
-        vault: 'My Vault',
         folderId: 'personal',
         login: {
           username: 'john.doe@example.com',
@@ -150,8 +138,7 @@ const personalTemplate: VaultData = {
         id: '8cf2d705-2fa1-4c0e-a111-111111111111',
         type: 1,
         name: 'Facebook 2FA',
-        vault: '2favault.reipur.dk',
-        folderId: '2favault.reipur.dk',
+        folderId: 'personal',
         login: {},
         fields: [
           { name: 'vaultdiagram-id', value: 'facebook-2fa-1111', type: 0 },
@@ -167,8 +154,7 @@ const personalTemplate: VaultData = {
         id: '9df2d705-2fa1-4c0e-a222-222222222222',
         type: 1,
         name: 'LinkedIn 2FA',
-        vault: '2favault.reipur.dk',
-        folderId: '2favault.reipur.dk',
+        folderId: 'personal',
         login: {},
         fields: [
           { name: 'vaultdiagram-id', value: 'linkedin-2fa-2222', type: 0 },

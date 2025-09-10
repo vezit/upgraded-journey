@@ -61,12 +61,13 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
   // Recovery methods appear first so they get placed in the top rows
   // -------------------------------------------------------------------------
   const itemsSorted = [...vault.items].sort((a: any, b: any) => {
-    const aRec = a.fields?.some(
-      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
-    )
-    const bRec = b.fields?.some(
-      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
-    )
+    const getRec = (it: any) => {
+      const fld = it.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+      if (!fld) return false
+      try { return !!JSON.parse(fld).recoveryNode } catch { return false }
+    }
+    const aRec = getRec(a)
+    const bRec = getRec(b)
     if (aRec === bRec) return 0
     return aRec ? -1 : 1
   })
@@ -75,30 +76,23 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
     const itemId = `item-${item.id}`
     const firstUri = item.login?.uris?.[0]?.uri
     const dom = domainFrom(firstUri)
-    const customLogoUrl = item.fields?.find(
-      (f: any) => f.name === 'vaultdiagram-logo-url',
-    )?.value
-    const nestedDom = item.fields?.find(
-      (f: any) => f.name === 'vaultdiagram-nested-domain',
-    )?.value
+    const diagRaw = item.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+    let diag: any = {}
+    try { diag = diagRaw ? JSON.parse(diagRaw) : {} } catch {}
+    const customLogoUrl = diag.logoUrl
+    const nestedDom = diag.nestedDomain
     const nestedLogoUrl = nestedDom ? logoFor(nestedDom) : undefined
 
-    const isRecovery = item.fields?.some(
-      (f: any) =>
-        f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
-    )
+    const isRecovery = !!diag.recoveryNode
 
-    const twofaField = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')?.value
     let twofaProviders: string[] = []
-    if (twofaField) {
-      try {
-        const map = JSON.parse(twofaField)
-        twofaProviders = Array.isArray(map.providers) ? map.providers : []
-      } catch {}
+    if (diag.twofaMap) {
+      const arr = diag.twofaMap.providers
+      if (Array.isArray(arr)) twofaProviders = arr
     }
     const has2fa = twofaProviders.length > 0
 
-    const slug = item.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
+    const slug = diag.id
     if (slug) slugToId[slug] = itemId
 
     const x = margin + col * stepX

@@ -4,43 +4,27 @@ This repository contains a small Next.js application used to visualize Bitwarden
 
 ## Recovery Relationship Field
 
-Vaultdiagram uses two custom fields to keep recovery relationships intact when a
-vault is exported and re‑imported:
+Vaultdiagram now stores its metadata in a single custom field named `vaultdiagram`. The field contains a JSON object with information such as:
 
-* `vaultdiagram-id` &ndash; a pseudo human readable identifier that is unique per
-  item.
-* `vaultdiagram-recovery-map` &ndash; JSON describing recovery relationships using
-  the above identifiers.
+* `id` – a pseudo human readable identifier unique per item.
+* `logoUrl` – optional logo URL for the service.
+* `nestedDomain` – optional domain for nested icons.
+* `recoveryNode` – boolean indicating whether the item is a recovery method.
+* `recoveryMap` – object with optional `recovers` and `recovered_by` arrays of `id` values describing recovery relationships.
+* `twofaMap` – object with a `providers` array referencing `id` values of 2FA providers.
 
-In addition services can reference their two-factor authentication methods with
-the optional `vaultdiagram-2fa-map` field. The value is JSON structured much
-like the recovery map and defaults to an empty object (`{}`) when omitted.
-
-```json
-{"providers": ["gmail-1863", "sms-9604"]}
-```
-
-The JSON object may contain the optional keys:
-
-* `recovers` – array of `vaultdiagram-id` values that this item can recover.
-* `recovered_by` – array of `vaultdiagram-id` values that can recover this item.
-
-Example for an item with the identifier `gmail-1863` that recovers two others:
+Example:
 
 ```json
-{"recovers": ["linkedin-7845", "netflix-30a1"]}
+{
+  "id": "gmail-1863",
+  "logoUrl": "https://mail.google.com/favicon.ico",
+  "recoveryMap": { "recovered_by": ["sms-9604"] },
+  "twofaMap": { "providers": ["auth-app-1111"] }
+}
 ```
 
-The recovered items would reference the recovering identifier:
-
-```json
-{"recovered_by": ["gmail-1863"]}
-```
-
-Items flagged as recovery methods can also use these mappings. This allows a recovery
-method to depend on another recovery method or require additional two-factor
-providers.
-
+Items flagged as recovery methods can also use these mappings. This allows a recovery method to depend on another recovery method or require additional two-factor providers.
 
 Keeping the value structured allows the application to automatically create edges between items when parsing the vault.
 
@@ -56,7 +40,6 @@ The assistant now starts by asking whether you use Bitwarden or Vaultwarden and 
 
 Use the list panel's **New** button to create additional items with the same UI used for editing.
 
-
 To enable Google Analytics, copy `app-main/.env.local.example` to `app-main/.env.local` and set `NEXT_PUBLIC_GA_ID` to your measurement ID.
 
 The app is currently in an alpha stage. A small red **ALPHA** banner appears in the top-right corner of every page as a reminder.
@@ -68,7 +51,6 @@ When you import or export a vault as *Personal*, items shared through a Bitwarde
 ## Version History
 
 Every time the vault is saved a snapshot is appended to a local history stored in your browser. Click **Version History** next to the export button to restore earlier snapshots.
-
 
 ## Web Version
 
@@ -89,4 +71,3 @@ Bitwarden, Clearbit, Supabase and OpenAI integrations are optional conveniences 
 ## Invoicing & Login
 
 Visit `/login` and enter your e-mail address to receive a Supabase magic link. After confirming the link you can access `/invoice` to create PDFs that are stored in Supabase Storage.
-

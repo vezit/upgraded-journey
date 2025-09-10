@@ -53,8 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                   "uris": [{"uri": "https://service.com", "match": null}]
                 },
                 "fields": [
-                  {"name": "vaultdiagram-id", "value": "service-id", "type": 0},
-                  {"name": "vaultdiagram-logo-url", "value": "https://service.com/favicon.ico", "type": 0}
+                  {"name": "vaultdiagram", "value": "{\"id\":\"service-id\",\"logoUrl\":\"https://service.com/favicon.ico\"}", "type": 0}
                 ]
               }
             ]

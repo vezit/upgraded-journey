@@ -153,6 +153,8 @@ export default function VaultOnboarding() {
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([])
   const [suggestedServices, setSuggestedServices] = useState<Service[]>([])
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [dynamicServices, setDynamicServices] = useState<Service[]>([])
+  const [isSearchingServices, setIsSearchingServices] = useState(false)
   
   const { setVault } = useVault()
   const { setGraph } = useGraph()
@@ -160,6 +162,14 @@ export default function VaultOnboarding() {
   // Load vault items from localStorage on component mount
   useEffect(() => {
     try {
+      // First, try to load from main vault data
+      const mainVaultData = storage.loadVault()
+      if (mainVaultData && mainVaultData.items && Array.isArray(mainVaultData.items)) {
+        setVaultItems(mainVaultData.items)
+        return
+      }
+      
+      // If no main vault data, try onboarding-specific storage
       const savedVaultItems = localStorage.getItem('onboarding-vault-items')
       if (savedVaultItems) {
         const parsedItems = JSON.parse(savedVaultItems)
@@ -175,7 +185,18 @@ export default function VaultOnboarding() {
   // Save vault items to localStorage whenever they change
   useEffect(() => {
     try {
+      // Save to onboarding-specific storage for recovery
       localStorage.setItem('onboarding-vault-items', JSON.stringify(vaultItems))
+      
+      // Also sync with main vault storage in real-time
+      if (vaultItems.length > 0) {
+        const vaultData = {
+          items: vaultItems,
+          folders: [],
+          collections: []
+        }
+        storage.saveVault(JSON.stringify(vaultData))
+      }
     } catch (error) {
       console.error('Error saving vault items to localStorage:', error)
     }
@@ -189,11 +210,16 @@ export default function VaultOnboarding() {
   }, [vaultItems, setVault, setGraph])
 
   // Filter services based on search query
-  const filteredServices = commonServices.filter(service =>
-    service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    service.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    service.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredServices = [
+    ...commonServices.filter(service =>
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    ...dynamicServices.filter(service => 
+      !commonServices.some(cs => cs.name.toLowerCase() === service.name.toLowerCase())
+    )
+  ]
 
   // Check if a service is already added to vault
   const isServiceAdded = (serviceName: string) => {
@@ -246,11 +272,31 @@ export default function VaultOnboarding() {
     getSuggestedServices(updatedItems)
   }
 
-  // Remove service from vault
+  // Remove service from vault by name
   const removeServiceFromVault = (serviceName: string) => {
     const updatedItems = vaultItems.filter(item => item.name.toLowerCase() !== serviceName.toLowerCase())
     setVaultItems(updatedItems)
     getSuggestedServices(updatedItems)
+  }
+
+  // Remove service from vault by ID
+  const removeServiceById = (itemId: string) => {
+    const updatedItems = vaultItems.filter(item => item.id !== itemId)
+    setVaultItems(updatedItems)
+    getSuggestedServices(updatedItems)
+  }
+
+  // Remove selected services from vault
+  const removeSelectedServices = (selectedIds: string[]) => {
+    const updatedItems = vaultItems.filter(item => !selectedIds.includes(item.id))
+    setVaultItems(updatedItems)
+    getSuggestedServices(updatedItems)
+  }
+
+  // Clear all services from vault
+  const clearAllServices = () => {
+    setVaultItems([])
+    setSuggestedServices([])
   }
 
   // Get AI-powered service suggestions
@@ -312,6 +358,58 @@ export default function VaultOnboarding() {
       setIsLoadingSuggestions(false)
     }
   }
+
+  // Dynamic service discovery for search queries
+  const searchForDynamicServices = async (query: string) => {
+    if (query.length < 2) {
+      setDynamicServices([])
+      return
+    }
+
+    // Don't search if it matches existing services
+    const matchesExisting = [...commonServices, ...suggestedServices].some(
+      service => service.name.toLowerCase().includes(query.toLowerCase())
+    )
+    if (matchesExisting) {
+      setDynamicServices([])
+      return
+    }
+
+    setIsSearchingServices(true)
+    try {
+      // Try to create a service from the search query
+      const serviceName = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
+      const domain = `${query.toLowerCase()}.com`
+      
+      // Test if the domain exists by trying to fetch its favicon
+      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+      const clearbitUrl = `https://logo.clearbit.com/${domain}`
+      
+      const newService: Service = {
+        name: serviceName,
+        keywords: [query.toLowerCase()],
+        category: 'Discovered',
+        icon: clearbitUrl,
+        domain: domain
+      }
+      
+      setDynamicServices([newService])
+    } catch (error) {
+      console.error('Error discovering service:', error)
+      setDynamicServices([])
+    } finally {
+      setIsSearchingServices(false)
+    }
+  }
+
+  // Debounced search for dynamic services
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      searchForDynamicServices(searchQuery)
+    }, 500)
+    
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
 
   // Save vault and continue
   const saveAndContinue = () => {
@@ -387,7 +485,9 @@ export default function VaultOnboarding() {
                         }}
                         className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-200 ${
                           isServiceAdded(service.name)
-                            ? 'border-green-200 bg-green-50 hover:border-red-300 hover:bg-red-50 cursor-pointer'
+                            ? 'border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer'
+                            : service.category === 'Discovered'
+                            ? 'border-orange-200 bg-orange-50 hover:border-orange-300 hover:bg-orange-100 cursor-pointer'
                             : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
                         }`}
                       >
@@ -407,18 +507,28 @@ export default function VaultOnboarding() {
                         <span className="text-sm font-medium text-gray-900 text-center">
                           {service.name}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {service.category}
+                        <span className={`text-xs ${
+                          service.category === 'Discovered' ? 'text-orange-600 font-medium' : 'text-gray-500'
+                        }`}>
+                          {service.category === 'Discovered' ? '🔍 Found' : service.category}
                         </span>
                       </button>
                     ))}
                   </div>
 
-                  {filteredServices.length === 0 && (
+                  {filteredServices.length === 0 && !isSearchingServices && (
                     <div className="text-center py-12 text-gray-500">
                       <MagnifyingGlassIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                       <p className="text-lg">No services found matching "{searchQuery}"</p>
                       <p className="text-sm mt-2">Try a different search term or browse our popular services</p>
+                    </div>
+                  )}
+
+                  {isSearchingServices && (
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="animate-spin w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+                      <p className="text-lg">Searching for "{searchQuery}"...</p>
+                      <p className="text-sm mt-2">Looking for logos and service details</p>
                     </div>
                   )}
 
@@ -460,6 +570,45 @@ export default function VaultOnboarding() {
                       </div>
                     </div>
                   )}
+
+                  {/* Discovered Services */}
+                  {dynamicServices.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        🔍 Discovered Services
+                        <span className="text-sm font-normal text-gray-500">
+                          Based on your search
+                        </span>
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {dynamicServices.map((service, index) => (
+                          <button
+                            key={`dynamic-${index}`}
+                            onClick={() => addServiceToVault(service)}
+                            className="flex flex-col items-center p-3 rounded-lg border border-blue-200 bg-blue-50 hover:border-blue-300 hover:bg-blue-100 transition-colors"
+                          >
+                            <img 
+                              src={service.icon} 
+                              alt={service.name} 
+                              className="w-8 h-8 mb-1"
+                            />
+                            <span className="text-xs font-medium text-gray-900 text-center">
+                              {service.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {isSearchingServices && (
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <div className="animate-spin w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full"></div>
+                        <span className="text-sm">Searching for services...</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -483,7 +632,12 @@ export default function VaultOnboarding() {
                       <p className="text-xs mt-1">Click on services to add them to your vault</p>
                     </div>
                   ) : (
-                    <VaultItemList onEdit={() => {}} />
+                    <VaultItemList 
+                      onEdit={() => {}} 
+                      onRemove={removeServiceById} 
+                      onRemoveSelected={removeSelectedServices}
+                      onClearAll={clearAllServices}
+                    />
                   )}
                 </div>
                 {vaultItems.length > 0 && (

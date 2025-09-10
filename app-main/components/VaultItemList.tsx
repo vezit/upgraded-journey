@@ -13,7 +13,7 @@ import {
   LockOpenIcon,
 } from '@heroicons/react/24/solid'
 
-type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void }
+type Props = { onEdit: (index: number) => void; onClose?: () => void; onCreate?: () => void; onRemove?: (itemId: string) => void; onRemoveSelected?: (selectedIds: string[]) => void; onClearAll?: () => void }
 
 
 const domainFrom = (raw?: string) => {
@@ -33,7 +33,7 @@ const logoFor = (domain?: string) =>
   domain ? `https://${domain}/favicon.ico` : '/img/default.svg'
 
 
-export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
+export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onRemoveSelected, onClearAll }: Props) {
   const { vault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const [query, setQuery] = useState('')
@@ -157,8 +157,38 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
           placeholder="Search"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full border px-2 py-1 rounded text-sm"
+          className="w-full border px-2 py-1 rounded text-sm mb-2"
         />
+        
+        {(onRemoveSelected || onClearAll) && (
+          <div className="flex gap-2 mb-2">
+            {onRemoveSelected && selected.length > 0 && (
+              <button
+                onClick={() => {
+                  const selectedIds = selected.map(i => items[i].id)
+                  onRemoveSelected(selectedIds)
+                  setSelected([])
+                }}
+                className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                Delete Selected ({selected.length})
+              </button>
+            )}
+            {onClearAll && items.length > 0 && (
+              <button
+                onClick={() => {
+                  if (confirm('Are you sure you want to remove all services from your vault?')) {
+                    onClearAll()
+                    setSelected([])
+                  }
+                }}
+                className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
 
@@ -265,6 +295,18 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
                         <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                       )}
                     </button>
+                    {onRemove && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          onRemove(item.id)
+                        }}
+                        className="ml-1 px-2 py-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded border border-red-200 hover:border-red-300 transition-colors text-xs font-medium"
+                        title="Remove from vault"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </td>
                 </tr>
               )

@@ -288,11 +288,8 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
       pos.y += height + margin
     }
 
-    // Ensure all groups behave consistently when moved.
-    // Previously the special 2favault.reipur.dk category was moved above
-    // everything else via a negative offset. This caused its child nodes to
-    // drift outside the box when dragging the group.  Removing the offset keeps
-    // the children inside the container during interactive moves.
+    // Ensure all groups behave consistently when moved. Removing the previous
+    // offset keeps the children inside the container during interactive moves.
 
     children.forEach((n) => {
       n.position.x -= pos.x

@@ -113,9 +113,7 @@ export default function EditItemModal({ index, onClose }: Props) {
     } else {
       items.push(item)
     }
-    let vaults = vault.vaults || []
-    if(item.vault && !vaults.includes(item.vault)) vaults = [...vaults, item.vault]
-    const updatedVault = { ...vault, items, vaults }
+    const updatedVault = { ...vault, items }
     setVault(updatedVault)
     setGraph(parseVault(updatedVault))
     storage.saveVault(JSON.stringify(updatedVault))
@@ -189,19 +187,6 @@ export default function EditItemModal({ index, onClose }: Props) {
                 onChange={e => updateItemState({ name: e.target.value })}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Vault</label>
-              <select
-                value={item.vault || ''}
-                onChange={e=>updateItemState({ vault: e.target.value || undefined })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              >
-                <option value="">None</option>
-                {(vault.vaults||[]).map((v:string)=>(
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
             </div>
             <div>
               <label className="block text-sm mb-1">Folder</label>

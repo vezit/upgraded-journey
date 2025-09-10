@@ -50,9 +50,7 @@ export default function LostModal({ id, onClose }: Props) {
               ))}
             </ul>
             <p className="mt-2 text-sm">
-              Collect the 2FA recovery codes for these services and store them in
-              a separate vault such as
-              <a href="https://2favault.reipur.dk" className="text-indigo-600 underline ml-1">2favault.reipur.dk</a>.
+              Collect the 2FA recovery codes for these services and store them safely.
             </p>
           </div>
         )}

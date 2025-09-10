@@ -31,7 +31,7 @@ Each item has a custom field “vaultdiagram-id” that uniquely identifies it. 
   • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
   • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
 
-Inform the user that nodes can be marked as lost using the “Lost Access” option. When something like a phone providing 2FA is lost, help identify which services are affected and remind the user to store their 2FA recovery codes in a separate vault such as https://2favault.reipur.dk.
+Inform the user that nodes can be marked as lost using the “Lost Access” option. When something like a phone providing 2FA is lost, help identify which services are affected and remind the user to store their 2FA recovery codes safely.
 
 When helping the user, explain how to create or edit these fields so the application can automatically create edges between items. Never request or store passwords or other sensitive secrets.`
 

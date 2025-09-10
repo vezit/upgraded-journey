@@ -37,7 +37,7 @@ const corporateTemplate: VaultData = {
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'postman-c3fb', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/postman.com?size=80', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://postman.com/favicon.ico', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
           { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","postman-2fa-1111"]}', type: 0 },
         ],
@@ -54,7 +54,7 @@ const corporateTemplate: VaultData = {
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'corporate-mail-1863', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/microsoft.com?size=80', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://microsoft.com/favicon.ico', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovers":["postman-c3fb","microsoft-7845","coolify-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
         ],
@@ -71,7 +71,7 @@ const corporateTemplate: VaultData = {
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'microsoft-7845', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/microsoft.com?size=80', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://microsoft.com/favicon.ico', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
           { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","corporate-mail-1863","microsoft-2fa-2222"]}', type: 0 },
         ],
@@ -88,7 +88,7 @@ const corporateTemplate: VaultData = {
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'coolify-30a1', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/coolify.io?size=80', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://coolify.io/favicon.ico', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
         ],
       },

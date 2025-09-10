@@ -1,4 +1,6 @@
-import topSites from 'top-sites/top-sites.json'
+
+import topSites from 'top-sites'
+
 import { parse } from 'tldts'
 
 export interface Service {

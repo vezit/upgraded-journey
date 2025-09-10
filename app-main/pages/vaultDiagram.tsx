@@ -56,6 +56,18 @@ export default function Vault() {
           >
             Version History
           </button>
+          <button
+            onClick={() => {
+              const templateData = createTemplate()
+              setVault(templateData)
+              setGraph(parseVault(templateData))
+              storage.saveVault(JSON.stringify(templateData))
+              clear()
+            }}
+            className="px-4 py-2 bg-orange-600 text-white rounded self-start hover:bg-orange-700"
+          >
+            Reset to Sample
+          </button>
           <label className="flex items-center gap-1 text-sm">
             <input
               type="checkbox"

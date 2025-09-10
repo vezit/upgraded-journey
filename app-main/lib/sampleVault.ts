@@ -45,7 +45,7 @@ const corporateTemplate: VaultData = {
       {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
-        name: 'Corporate Mail (john.doe@domain.com)',
+        name: 'Company Mail',
         folderId: 'personal',
         login: {
           username: 'john.doe@domain.com',
@@ -110,53 +110,6 @@ const corporateTemplate: VaultData = {
           { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
           { name: 'vaultdiagram-recovery-map', value: '{"recovers":["corporate-mail-1863"]}', type: 0 },
           { name: 'phone_number', value: '+45 12345678', type: 0 },
-        ],
-      },
-      {
-        id: '5bdd19e4-9973-41a5-9b5f-08e54ec42431',
-        type: 1,
-        name: 'Vaultwarden Dev',
-        folderId: 'personal',
-        login: {
-          username: 'john.doe@example.com',
-          password: '',
-          uris: [{ uri: 'https://vault.example.com', match: null }],
-        },
-        fields: [
-          { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
-        ],
-      },
-      {
-        id: '8cf2d705-2fa1-4c0e-a111-111111111111',
-        type: 1,
-        name: 'Postman 2FA',
-        folderId: 'personal',
-        login: {},
-        fields: [
-          { name: 'vaultdiagram-id', value: 'postman-2fa-1111', type: 0 },
-          {
-            name: 'vaultdiagram-logo-url',
-            value: 'https://logo.clearbit.com/postman.com?size=80',
-            type: 0,
-          },
-          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
-        ],
-      },
-      {
-        id: '9df2d705-2fa1-4c0e-a222-222222222222',
-        type: 1,
-        name: 'Microsoft 2FA',
-        folderId: 'personal',
-        login: {},
-        fields: [
-          { name: 'vaultdiagram-id', value: 'microsoft-2fa-2222', type: 0 },
-          {
-            name: 'vaultdiagram-logo-url',
-            value: 'https://logo.clearbit.com/microsoft.com?size=80',
-            type: 0,
-          },
-          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
         ],
       },
     ],

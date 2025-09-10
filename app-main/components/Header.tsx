@@ -4,8 +4,8 @@ import { useLanguage } from '@/contexts/LanguageStore'
 import { useEffect } from 'react'
 
 const labels = {
-  en: { home: 'Home', diagram: 'Diagram', upload: 'Upload', about: 'About', en: 'English', da: 'Dansk' },
-  da: { home: 'Hjem', diagram: 'Diagram', upload: 'Upload', about: 'Om', en: 'Engelsk', da: 'Dansk' }
+  en: { home: 'Home', diagram: 'Diagram', upload: 'Upload', chatgpt: 'AI Chat', about: 'About', en: 'English', da: 'Dansk' },
+  da: { home: 'Hjem', diagram: 'Diagram', upload: 'Upload', chatgpt: 'AI Chat', about: 'Om', en: 'Engelsk', da: 'Dansk' }
 }
 
 export default function Header() {
@@ -28,6 +28,7 @@ export default function Header() {
         <Link href="/">{t.home}</Link>
         <Link href="/vaultDiagram">{t.diagram}</Link>
         <Link href="/vaultUpload">{t.upload}</Link>
+        <Link href="/vaultChatGPT">{t.chatgpt}</Link>
         <Link href="/about">{t.about}</Link>
       </nav>
       <div className="flex gap-2">

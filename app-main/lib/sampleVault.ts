@@ -36,10 +36,16 @@ const corporateTemplate: VaultData = {
           uris: [{ uri: 'https://postman.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'postman-c3fb', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://postman.com/favicon.ico', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","postman-2fa-1111"]}', type: 0 },
+          {
+            name: 'vaultdiagram',
+            value: JSON.stringify({
+              id: 'postman-c3fb',
+              logoUrl: 'https://postman.com/favicon.ico',
+              recoveryMap: { recovered_by: ['corporate-mail-1863'] },
+              twofaMap: { providers: ['phone-pixel-7a-2b11', 'postman-2fa-1111'] },
+            }),
+            type: 0,
+          },
         ],
       },
       {
@@ -53,10 +59,19 @@ const corporateTemplate: VaultData = {
           uris: [{ uri: 'https://mail.domain.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'corporate-mail-1863', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://microsoft.com/favicon.ico', type: 0 },
-          { name: 'recovery_node', value: 'true', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["postman-c3fb","microsoft-7845","coolify-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
+          {
+            name: 'vaultdiagram',
+            value: JSON.stringify({
+              id: 'corporate-mail-1863',
+              logoUrl: 'https://microsoft.com/favicon.ico',
+              recoveryNode: true,
+              recoveryMap: {
+                recovers: ['postman-c3fb', 'microsoft-7845', 'coolify-30a1', 'vaultwarden-dev-2431'],
+                recovered_by: ['phone-pixel-7a-2b11'],
+              },
+            }),
+            type: 0,
+          },
         ],
       },
       {
@@ -70,10 +85,18 @@ const corporateTemplate: VaultData = {
           uris: [{ uri: 'https://office.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'microsoft-7845', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://microsoft.com/favicon.ico', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","corporate-mail-1863","microsoft-2fa-2222"]}', type: 0 },
+          {
+            name: 'vaultdiagram',
+            value: JSON.stringify({
+              id: 'microsoft-7845',
+              logoUrl: 'https://microsoft.com/favicon.ico',
+              recoveryMap: { recovered_by: ['corporate-mail-1863'] },
+              twofaMap: {
+                providers: ['phone-pixel-7a-2b11', 'corporate-mail-1863', 'microsoft-2fa-2222'],
+              },
+            }),
+            type: 0,
+          },
         ],
       },
       {
@@ -87,9 +110,15 @@ const corporateTemplate: VaultData = {
           uris: [{ uri: 'https://coolify.io', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'coolify-30a1', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://coolify.io/favicon.ico', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
+          {
+            name: 'vaultdiagram',
+            value: JSON.stringify({
+              id: 'coolify-30a1',
+              logoUrl: 'https://coolify.io/favicon.ico',
+              recoveryMap: { recovered_by: ['corporate-mail-1863'] },
+            }),
+            type: 0,
+          },
         ],
       },
       {
@@ -104,11 +133,17 @@ const corporateTemplate: VaultData = {
           ],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'phone-pixel-7a-2b11', type: 0 },
-          { name: 'recovery_node', value: 'true', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: '/img/phone.svg', type: 0 },
-          { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["corporate-mail-1863"]}', type: 0 },
+          {
+            name: 'vaultdiagram',
+            value: JSON.stringify({
+              id: 'phone-pixel-7a-2b11',
+              recoveryNode: true,
+              logoUrl: '/img/phone.svg',
+              nestedDomain: '2fas.com',
+              recoveryMap: { recovers: ['corporate-mail-1863'] },
+            }),
+            type: 0,
+          },
           { name: 'phone_number', value: '+45 12345678', type: 0 },
         ],
       },

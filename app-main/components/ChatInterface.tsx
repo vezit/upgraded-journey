@@ -27,9 +27,10 @@ When the user provides the name of a service and an email address, automatically
 If no URL is specified for the service, infer a sensible default from the name
 (for example "instagram.com" for "Instagram").
 
-Each item has a custom field “vaultdiagram-id” that uniquely identifies it. Relationships are stored in two JSON based fields:
-  • “vaultdiagram-recovery-map” with optional “recovers” and “recovered_by” arrays of vaultdiagram-id values.
-  • “vaultdiagram-2fa-map” with a “providers” array referencing vaultdiagram-id values of recovery methods.
+Each item has a custom field “vaultdiagram” containing a JSON object with:
+  • “id” – a pseudo human readable identifier unique per item.
+  • “recoveryMap” with optional “recovers” and “recovered_by” arrays of id values.
+  • “twofaMap” with a “providers” array referencing id values of recovery methods.
 
 Inform the user that nodes can be marked as lost using the “Lost Access” option. When something like a phone providing 2FA is lost, help identify which services are affected and remind the user to store their 2FA recovery codes safely.
 

@@ -44,66 +44,79 @@ export default function EditItemModal({ index, onClose }: Props) {
   const updateItemState = (partial: any) =>
     setItem((prev: any) => ({ ...prev, ...partial }))
 
-  const isRecovery = item.fields?.some(
-    (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
-  )
+  const getDiagram = () => {
+    const fld = item.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+    if (!fld) return {} as any
+    try {
+      return JSON.parse(fld)
+    } catch {
+      return {} as any
+    }
+  }
+
+  const setDiagram = (update: (d: any) => void) => {
+    const diag = getDiagram()
+    update(diag)
+    let fields = [...(item.fields || [])]
+    const idx = fields.findIndex((f: any) => f.name === 'vaultdiagram')
+    const value = JSON.stringify(diag)
+    if (idx > -1) fields[idx].value = value
+    else fields.push({ name: 'vaultdiagram', value, type: 0 })
+    updateItemState({ fields })
+  }
+
+  const diagram = getDiagram()
+  const isRecovery = !!diagram.recoveryNode
 
   const toggleRecovery = () => {
-    const fields = [...(item.fields || [])]
-    const idx = fields.findIndex((f) => f.name === 'recovery_node')
-    if (idx > -1) fields.splice(idx, 1)
-    else fields.push({ name: 'recovery_node', value: 'true', type: 0 })
-    updateItemState({ fields })
+    setDiagram((d) => {
+      d.recoveryNode = !d.recoveryNode
+    })
   }
 
   const { setGraph } = useGraph()
 
-  const recoveryItems = vault.items.filter((it: any) =>
-    it.fields?.some(
-      (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true'
-    )
-  )
+  const recoveryItems = vault.items.filter((it: any) => {
+    const fld = it.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+    if (!fld) return false
+    try {
+      return !!JSON.parse(fld).recoveryNode
+    } catch {
+      return false
+    }
+  })
 
-  const slugFor = (id: string) =>
-    vault.items
-      .find((it: any) => String(it.id) === id)?.fields?.find((f: any) => f.name === 'vaultdiagram-id')
+  const slugFor = (id: string) => {
+    const fld = vault.items
+      .find((it: any) => String(it.id) === id)?.fields?.find((f: any) => f.name === 'vaultdiagram')
       ?.value
-
-  const nameForSlug = (slug: string) =>
-    vault.items.find((it: any) =>
-      it.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === slug)
-    )?.name || slug
-
-  const parseMapField = (name: string, key: string): string[] => {
-    const fld = item.fields?.find((f: any) => f.name === name)?.value
-    if (!fld) return []
+    if (!fld) return undefined
     try {
-      const m = JSON.parse(fld)
-      return Array.isArray(m[key]) ? m[key] : []
+      return JSON.parse(fld).id
     } catch {
-      return []
+      return undefined
     }
   }
 
-  const updateMapField = (name: string, key: string, values: string[]) => {
-    let field = item.fields?.find((f: any) => f.name === name)
-    if (!field) {
-      field = { name, value: '{}', type: 0 }
-      updateItemState({ fields: [...(item.fields || []), field] })
-    }
-    try {
-      const map = JSON.parse(field.value || '{}')
-      map[key] = values
-      field.value = JSON.stringify(map)
-      updateItemState({ fields: [...(item.fields || [])] })
-    } catch {
-      field.value = JSON.stringify({ [key]: values })
-      updateItemState({ fields: [...(item.fields || [])] })
-    }
+  const nameForSlug = (slug: string) => {
+    const it = vault.items.find((it: any) => {
+      const fld = it.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+      if (!fld) return false
+      try {
+        return JSON.parse(fld).id === slug
+      } catch {
+        return false
+      }
+    })
+    return it?.name || slug
   }
 
-  const recoveredBy = parseMapField('vaultdiagram-recovery-map', 'recovered_by')
-  const providers = parseMapField('vaultdiagram-2fa-map', 'providers')
+  const recoveredBy: string[] = Array.isArray(diagram.recoveryMap?.recovered_by)
+    ? diagram.recoveryMap.recovered_by
+    : []
+  const providers: string[] = Array.isArray(diagram.twofaMap?.providers)
+    ? diagram.twofaMap.providers
+    : []
 
 
   const handleSave = () => {
@@ -146,7 +159,12 @@ export default function EditItemModal({ index, onClose }: Props) {
     const slug = slugFor(mapTarget)
     if (!slug) return
     if (!recoveredBy.includes(slug)) {
-      updateMapField('vaultdiagram-recovery-map', 'recovered_by', [...recoveredBy, slug])
+      setDiagram((d) => {
+        const arr = Array.isArray(d.recoveryMap?.recovered_by)
+          ? d.recoveryMap.recovered_by
+          : []
+        d.recoveryMap = { ...(d.recoveryMap || {}), recovered_by: [...arr, slug] }
+      })
     }
     setMapTarget('')
   }
@@ -156,19 +174,32 @@ export default function EditItemModal({ index, onClose }: Props) {
     const slug = slugFor(twofaTarget)
     if (!slug) return
     if (!providers.includes(slug)) {
-      updateMapField('vaultdiagram-2fa-map', 'providers', [...providers, slug])
+      setDiagram((d) => {
+        const arr = Array.isArray(d.twofaMap?.providers)
+          ? d.twofaMap.providers
+          : []
+        d.twofaMap = { ...(d.twofaMap || {}), providers: [...arr, slug] }
+      })
     }
     setTwofaTarget('')
   }
 
   const removeRecoveryMap = (slug: string) => {
-    const filtered = recoveredBy.filter((s) => s !== slug)
-    updateMapField('vaultdiagram-recovery-map', 'recovered_by', filtered)
+    setDiagram((d) => {
+      const arr = Array.isArray(d.recoveryMap?.recovered_by)
+        ? d.recoveryMap.recovered_by
+        : []
+      d.recoveryMap = { ...(d.recoveryMap || {}), recovered_by: arr.filter((s: string) => s !== slug) }
+    })
   }
 
   const removeTwofaMap = (slug: string) => {
-    const filtered = providers.filter((s) => s !== slug)
-    updateMapField('vaultdiagram-2fa-map', 'providers', filtered)
+    setDiagram((d) => {
+      const arr = Array.isArray(d.twofaMap?.providers)
+        ? d.twofaMap.providers
+        : []
+      d.twofaMap = { ...(d.twofaMap || {}), providers: arr.filter((s: string) => s !== slug) }
+    })
   }
 
   return (

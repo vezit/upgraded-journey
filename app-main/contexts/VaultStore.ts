@@ -49,267 +49,269 @@ interface VaultState {
   ) => void
 }
 
-export const useVault = create<VaultState>((set, get) => ({
-  vault: null,
-  setVault: (v) => set({ vault: v }),
-  updateItem: (index, field, value) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-    const item = { ...items[index] }
-    if (field === 'name') item.name = value
-    else if (field === 'username')
-      item.login = { ...item.login, username: value }
-    else if (field === 'password')
-      item.login = { ...item.login, password: value }
-    else if (field === 'uri') {
-      const uris = item.login?.uris?.length
-        ? [...item.login.uris]
-        : [{ match: null, uri: '' }]
-      uris[0] = { ...uris[0], uri: value }
-      item.login = { ...item.login, uris }
-    }
-    items[index] = item
-    set({ vault: { ...v, items } })
-  },
-  addRecovery: (sourceId, targetId) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-
-    const srcIdx = items.findIndex((i: any) => String(i.id) === sourceId)
-    const tgtIdx = items.findIndex((i: any) => String(i.id) === targetId)
-    if (srcIdx === -1 || tgtIdx === -1) return
-
-    const src = { ...items[srcIdx] }
-    const tgt = { ...items[tgtIdx] }
-
-    const slugSrc = src.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
-    const slugTgt = tgt.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
-    if (!slugSrc || !slugTgt) return
-
-    const updateMap = (item: any, key: 'recovers' | 'recovered_by', slug: string) => {
-      let field = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')
-      if (!field) {
-        field = { name: 'vaultdiagram-recovery-map', value: '{}', type: 0 }
-        item.fields = item.fields ? [...item.fields, field] : [field]
-      }
-      let map: any
-      try {
-        map = JSON.parse(field.value || '{}')
-      } catch {
-        map = {}
-      }
-      const arr = Array.isArray(map[key]) ? map[key] : []
-      if (!arr.includes(slug)) arr.push(slug)
-      map[key] = arr
-      field.value = JSON.stringify(map)
-    }
-
-    // when connecting from a service to a recovery item we
-    // store the relation as target.recovers -> source and
-    // source.recovered_by -> target
-    updateMap(tgt, 'recovers', slugSrc)
-    updateMap(src, 'recovered_by', slugTgt)
-
-    items[srcIdx] = src
-    items[tgtIdx] = tgt
-
-    set({ vault: { ...v, items } })
-  },
-  addRecoverySlug: (srcSlug, tgtSlug) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-
-    const srcIdx = items.findIndex((i: any) =>
-      i.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === srcSlug)
-    )
-    const tgtIdx = items.findIndex((i: any) =>
-      i.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === tgtSlug)
-    )
-    if (srcIdx === -1 || tgtIdx === -1) return
-
-    const src = { ...items[srcIdx] }
-    const tgt = { ...items[tgtIdx] }
-
-    const updateMap = (item: any, key: 'recovers' | 'recovered_by', slug: string) => {
-      let field = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')
-      if (!field) {
-        field = { name: 'vaultdiagram-recovery-map', value: '{}', type: 0 }
-        item.fields = item.fields ? [...item.fields, field] : [field]
-      }
-      let map: any
-      try {
-        map = JSON.parse(field.value || '{}')
-      } catch {
-        map = {}
-      }
-      const arr = Array.isArray(map[key]) ? map[key] : []
-      if (!arr.includes(slug)) arr.push(slug)
-      map[key] = arr
-      field.value = JSON.stringify(map)
-    }
-
-    updateMap(tgt, 'recovers', srcSlug)
-    updateMap(src, 'recovered_by', tgtSlug)
-
-    items[srcIdx] = src
-    items[tgtIdx] = tgt
-
-    set({ vault: { ...v, items } })
-  },
-  addTwofa: (serviceSlug, providerSlug) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-
-    const idx = items.findIndex((i: any) =>
-      i.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === serviceSlug)
-    )
-    if (idx === -1) return
-
-    const item = { ...items[idx] }
-    let field = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')
-    if (!field) {
-      field = { name: 'vaultdiagram-2fa-map', value: '{}', type: 0 }
-      item.fields = item.fields ? [...item.fields, field] : [field]
-    }
-    let map: any
+export const useVault = create<VaultState>((set, get) => {
+  const getVD = (item: any) => {
+    const raw = item.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+    if (!raw) return {}
     try {
-      map = JSON.parse(field.value || '{}')
+      return JSON.parse(raw)
     } catch {
-      map = {}
+      return {}
     }
-    const arr = Array.isArray(map.providers) ? map.providers : []
-    if (!arr.includes(providerSlug)) arr.push(providerSlug)
-    map.providers = arr
-    field.value = JSON.stringify(map)
+  }
+  const setVD = (item: any, vd: any) => {
+    let fields = item.fields ? [...item.fields] : []
+    const idx = fields.findIndex((f: any) => f.name === 'vaultdiagram')
+    const value = JSON.stringify(vd)
+    if (idx > -1) fields[idx] = { ...fields[idx], value }
+    else fields.push({ name: 'vaultdiagram', value, type: 0 })
+    item.fields = fields
+  }
 
-    items[idx] = item
-    set({ vault: { ...v, items } })
-  },
-
-  removeRecovery: (sourceId: string, targetId: string) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-
-    const srcIdx = items.findIndex((i: any) => String(i.id) === sourceId)
-    const tgtIdx = items.findIndex((i: any) => String(i.id) === targetId)
-    if (srcIdx === -1 || tgtIdx === -1) return
-
-    const src = { ...items[srcIdx] }
-    const tgt = { ...items[tgtIdx] }
-
-    const slugSrc = src.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
-    const slugTgt = tgt.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
-    if (!slugSrc || !slugTgt) return
-
-    const updateMap = (item: any, key: 'recovers' | 'recovered_by', slug: string) => {
-      const field = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')
-      if (!field) return
-      let map: any
-      try {
-        map = JSON.parse(field.value || '{}')
-      } catch {
-        map = {}
+  return {
+    vault: null,
+    setVault: (v) => set({ vault: v }),
+    updateItem: (index, field, value) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+      const item = { ...items[index] }
+      if (field === 'name') item.name = value
+      else if (field === 'username')
+        item.login = { ...item.login, username: value }
+      else if (field === 'password')
+        item.login = { ...item.login, password: value }
+      else if (field === 'uri') {
+        const uris = item.login?.uris?.length
+          ? [...item.login.uris]
+          : [{ match: null, uri: '' }]
+        uris[0] = { ...uris[0], uri: value }
+        item.login = { ...item.login, uris }
       }
-      const arr = Array.isArray(map[key]) ? map[key] : []
-      map[key] = arr.filter((s: string) => s !== slug)
-      field.value = JSON.stringify(map)
-    }
+      items[index] = item
+      set({ vault: { ...v, items } })
+    },
+    addRecovery: (sourceId, targetId) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
 
-    updateMap(tgt, 'recovers', slugSrc)
-    updateMap(src, 'recovered_by', slugTgt)
+      const srcIdx = items.findIndex((i: any) => String(i.id) === sourceId)
+      const tgtIdx = items.findIndex((i: any) => String(i.id) === targetId)
+      if (srcIdx === -1 || tgtIdx === -1) return
 
-    items[srcIdx] = src
-    items[tgtIdx] = tgt
+      const src = { ...items[srcIdx] }
+      const tgt = { ...items[tgtIdx] }
 
-    set({ vault: { ...v, items } })
-  },
+      const srcVD = getVD(src)
+      const tgtVD = getVD(tgt)
+      if (!srcVD.id || !tgtVD.id) return
 
-  removeTwofa: (serviceId: string, providerId: string) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
+      const updateMap = (
+        vd: any,
+        key: 'recovers' | 'recovered_by',
+        slug: string
+      ) => {
+        const map = vd.recoveryMap || {}
+        const arr = Array.isArray(map[key]) ? map[key] : []
+        if (!arr.includes(slug)) arr.push(slug)
+        map[key] = arr
+        vd.recoveryMap = map
+      }
 
-    const serviceIdx = items.findIndex((i: any) => String(i.id) === serviceId)
-    const providerIdx = items.findIndex((i: any) => String(i.id) === providerId)
-    if (serviceIdx === -1 || providerIdx === -1) return
+      updateMap(tgtVD, 'recovers', srcVD.id)
+      updateMap(srcVD, 'recovered_by', tgtVD.id)
 
-    const service = { ...items[serviceIdx] }
-    const provider = { ...items[providerIdx] }
-    const providerSlug = provider.fields?.find((f: any) => f.name === 'vaultdiagram-id')?.value
-    if (!providerSlug) return
+      setVD(src, srcVD)
+      setVD(tgt, tgtVD)
 
-    const field = service.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')
-    if (!field) return
+      items[srcIdx] = src
+      items[tgtIdx] = tgt
 
-    let map: any
-    try {
-      map = JSON.parse(field.value || '{}')
-    } catch {
-      map = {}
-    }
-    const arr = Array.isArray(map.providers) ? map.providers : []
-    map.providers = arr.filter((s: string) => s !== providerSlug)
-    field.value = JSON.stringify(map)
+      set({ vault: { ...v, items } })
+    },
+    addRecoverySlug: (srcSlug, tgtSlug) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
 
-    items[serviceIdx] = service
+      const srcIdx = items.findIndex((i: any) => getVD(i).id === srcSlug)
+      const tgtIdx = items.findIndex((i: any) => getVD(i).id === tgtSlug)
+      if (srcIdx === -1 || tgtIdx === -1) return
 
-    set({ vault: { ...v, items } })
-  },
-  createItem: (itemData) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-    const item: any = {
-      id: (crypto as any).randomUUID(),
-      type: 1,
-      name: itemData.name,
-      login: {},
-      fields: [{ name: 'vaultdiagram-id', value: itemData.slug, type: 0 }],
-    }
-    if (itemData.username) item.login.username = itemData.username
-    if (itemData.password) item.login.password = itemData.password
-    if (itemData.totp) item.login.totp = itemData.totp
-    const uriGuess = itemData.uri || `https://${guessDomainFromName(itemData.name) || ''}`
-    if (uriGuess && uriGuess !== 'https://')
-      item.login.uris = [{ uri: uriGuess, match: null }]
-    if (itemData.notes) item.notes = itemData.notes
-    if (itemData.isRecovery)
-      item.fields.push({ name: 'recovery_node', value: 'true', type: 0 })
+      const src = { ...items[srcIdx] }
+      const tgt = { ...items[tgtIdx] }
 
-    items.push(item)
-    set({ vault: { ...v, items } })
-  },
-  updateItemBySlug: (slug, field, value) => {
-    const v = get().vault
-    if (!v || !v.items) return
-    const items = [...v.items]
-    const idx = items.findIndex((i: any) =>
-      i.fields?.some((f: any) => f.name === 'vaultdiagram-id' && f.value === slug)
-    )
-    if (idx === -1) return
+      const srcVD = getVD(src)
+      const tgtVD = getVD(tgt)
+      const updateMap = (
+        vd: any,
+        key: 'recovers' | 'recovered_by',
+        slug: string
+      ) => {
+        const map = vd.recoveryMap || {}
+        const arr = Array.isArray(map[key]) ? map[key] : []
+        if (!arr.includes(slug)) arr.push(slug)
+        map[key] = arr
+        vd.recoveryMap = map
+      }
 
-    const item = { ...items[idx] }
-    if (field === 'name') item.name = value
-    else if (field === 'username')
-      item.login = { ...item.login, username: value }
-    else if (field === 'password')
-      item.login = { ...item.login, password: value }
-    else if (field === 'totp')
-      item.login = { ...item.login, totp: value }
-    else if (field === 'uri') {
-      const uris = item.login?.uris?.length ? [...item.login.uris] : [{ match: null, uri: '' }]
-      uris[0] = { ...uris[0], uri: value }
-      item.login = { ...item.login, uris }
-    } else if (field === 'notes') {
-      item.notes = value
-    }
+      updateMap(tgtVD, 'recovers', srcSlug)
+      updateMap(srcVD, 'recovered_by', tgtSlug)
 
-    items[idx] = item
-    set({ vault: { ...v, items } })
-  },
-}))
+      setVD(src, srcVD)
+      setVD(tgt, tgtVD)
+
+      items[srcIdx] = src
+      items[tgtIdx] = tgt
+
+      set({ vault: { ...v, items } })
+    },
+    addTwofa: (serviceSlug, providerSlug) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+
+      const idx = items.findIndex((i: any) => getVD(i).id === serviceSlug)
+      if (idx === -1) return
+
+      const item = { ...items[idx] }
+      const vd = getVD(item)
+      const arr = Array.isArray(vd.twofaMap?.providers)
+        ? vd.twofaMap.providers
+        : []
+      if (!arr.includes(providerSlug)) {
+        vd.twofaMap = {
+          ...(vd.twofaMap || {}),
+          providers: [...arr, providerSlug],
+        }
+      }
+      setVD(item, vd)
+
+      items[idx] = item
+      set({ vault: { ...v, items } })
+    },
+    removeRecovery: (sourceId: string, targetId: string) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+
+      const srcIdx = items.findIndex((i: any) => String(i.id) === sourceId)
+      const tgtIdx = items.findIndex((i: any) => String(i.id) === targetId)
+      if (srcIdx === -1 || tgtIdx === -1) return
+
+      const src = { ...items[srcIdx] }
+      const tgt = { ...items[tgtIdx] }
+
+      const srcVD = getVD(src)
+      const tgtVD = getVD(tgt)
+      if (!srcVD.id || !tgtVD.id) return
+
+      const updateMap = (
+        vd: any,
+        key: 'recovers' | 'recovered_by',
+        slug: string
+      ) => {
+        const map = vd.recoveryMap || {}
+        const arr = Array.isArray(map[key]) ? map[key] : []
+        vd.recoveryMap = {
+          ...map,
+          [key]: arr.filter((s: string) => s !== slug),
+        }
+      }
+
+      updateMap(tgtVD, 'recovers', srcVD.id)
+      updateMap(srcVD, 'recovered_by', tgtVD.id)
+
+      setVD(src, srcVD)
+      setVD(tgt, tgtVD)
+
+      items[srcIdx] = src
+      items[tgtIdx] = tgt
+
+      set({ vault: { ...v, items } })
+    },
+    removeTwofa: (serviceId: string, providerId: string) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+
+      const serviceIdx = items.findIndex((i: any) => String(i.id) === serviceId)
+      const providerIdx = items.findIndex((i: any) => String(i.id) === providerId)
+      if (serviceIdx === -1 || providerIdx === -1) return
+
+      const service = { ...items[serviceIdx] }
+      const provider = { ...items[providerIdx] }
+      const providerSlug = getVD(provider).id
+      if (!providerSlug) return
+
+      const serviceVD = getVD(service)
+      const arr = Array.isArray(serviceVD.twofaMap?.providers)
+        ? serviceVD.twofaMap.providers
+        : []
+      serviceVD.twofaMap = {
+        providers: arr.filter((s: string) => s !== providerSlug),
+      }
+      setVD(service, serviceVD)
+
+      items[serviceIdx] = service
+
+      set({ vault: { ...v, items } })
+    },
+    createItem: (itemData) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+      const item: any = {
+        id: (crypto as any).randomUUID(),
+        type: 1,
+        name: itemData.name,
+        login: {},
+        fields: [],
+      }
+      if (itemData.username) item.login.username = itemData.username
+      if (itemData.password) item.login.password = itemData.password
+      if (itemData.totp) item.login.totp = itemData.totp
+      const uriGuess =
+        itemData.uri || `https://${guessDomainFromName(itemData.name) || ''}`
+      if (uriGuess && uriGuess !== 'https://')
+        item.login.uris = [{ uri: uriGuess, match: null }]
+      if (itemData.notes) item.notes = itemData.notes
+      const vd: any = { id: itemData.slug }
+      if (itemData.isRecovery) vd.recoveryNode = true
+      setVD(item, vd)
+
+      items.push(item)
+      set({ vault: { ...v, items } })
+    },
+    updateItemBySlug: (slug, field, value) => {
+      const v = get().vault
+      if (!v || !v.items) return
+      const items = [...v.items]
+      const idx = items.findIndex((i: any) => getVD(i).id === slug)
+      if (idx === -1) return
+
+      const item = { ...items[idx] }
+      if (field === 'name') item.name = value
+      else if (field === 'username')
+        item.login = { ...item.login, username: value }
+      else if (field === 'password')
+        item.login = { ...item.login, password: value }
+      else if (field === 'totp')
+        item.login = { ...item.login, totp: value }
+      else if (field === 'uri') {
+        const uris = item.login?.uris?.length
+          ? [...item.login.uris]
+          : [{ match: null, uri: '' }]
+        uris[0] = { ...uris[0], uri: value }
+        item.login = { ...item.login, uris }
+      } else if (field === 'notes') {
+        item.notes = value
+      }
+
+      items[idx] = item
+      set({ vault: { ...v, items } })
+    },
+  }
+})
+

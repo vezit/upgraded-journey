@@ -98,12 +98,17 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
   const orderedIndexes = items
     .map((item: any, idx: number) => ({ item, idx }))
     .sort((a: { item: any; idx: number }, b: { item: any; idx: number }) => {
-      const aRec = a.item.fields?.some(
-        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
-      )
-      const bRec = b.item.fields?.some(
-        (f: any) => f.name === 'recovery_node' && String(f.value).toLowerCase() === 'true',
-      )
+      const getRec = (it: any) => {
+        const fld = it.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+        if (!fld) return false
+        try {
+          return !!JSON.parse(fld).recoveryNode
+        } catch {
+          return false
+        }
+      }
+      const aRec = getRec(a.item)
+      const bRec = getRec(b.item)
       if (aRec === bRec) return 0
       return aRec ? -1 : 1
     })
@@ -221,15 +226,12 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
               const item = items[index]
               const uri = item.login?.uris?.[0]?.uri
               const domain = domainFrom(uri)
-              const customLogo = item.fields?.find(
-                (f: any) => f.name === 'vaultdiagram-logo-url',
-              )?.value
+              const vdRaw = item.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
+              let vd: any = {}
+              try { vd = vdRaw ? JSON.parse(vdRaw) : {} } catch {}
+              const customLogo = vd.logoUrl
               const logo = customLogo || logoFor(domain)
-              const isRecovery = item.fields?.some(
-                (f: any) =>
-                  f.name === 'recovery_node' &&
-                  String(f.value).toLowerCase() === 'true'
-              )
+              const isRecovery = !!vd.recoveryNode
               const rowId = `item-${item.id}`
               const highlighted = hoveredId === rowId
               return (

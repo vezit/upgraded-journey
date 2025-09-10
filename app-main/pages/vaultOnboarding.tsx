@@ -242,23 +242,13 @@ export default function VaultOnboarding() {
       },
       fields: [
         {
-          name: 'vaultdiagram-id',
-          value: vaultId,
-          type: 0
-        },
-        {
-          name: 'vaultdiagram-logo-url',
-          value: service.icon,
-          type: 0
-        },
-        {
-          name: 'vaultdiagram-recovery-map',
-          value: '{}',
-          type: 0
-        },
-        {
-          name: 'vaultdiagram-2fa-map',
-          value: '{}',
+          name: 'vaultdiagram',
+          value: JSON.stringify({
+            id: vaultId,
+            logoUrl: service.icon,
+            recoveryMap: {},
+            twofaMap: {}
+          }),
           type: 0
         }
       ],

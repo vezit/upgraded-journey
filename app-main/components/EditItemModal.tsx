@@ -198,6 +198,18 @@ export default function EditItemModal({ index, onClose }: Props) {
               />
             </div>
           </div>
+          <div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isRecovery}
+                onChange={toggleRecovery}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              Recovery Node
+              <span className="text-gray-500 text-xs">(Can recover other accounts)</span>
+            </label>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-1">Username</label>

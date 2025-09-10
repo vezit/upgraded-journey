@@ -125,58 +125,8 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
   })
 
   // -------------------------------------------------------------------------
-  // Pass 2: create edges
+  // Skip edge creation - no lines between items
   // -------------------------------------------------------------------------
-  vault.items.forEach((item: any) => {
-    const source = `item-${item.id}`
-
-    // a) legacy single‑id field ------------------------------------------------
-    item.fields?.forEach((f: any) => {
-      if (f.name === 'recovery' && f.value) {
-        const target = `item-${f.value}`
-        addEdgeUnique({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
-      }
-    })
-
-    // b) JSON mapping ---------------------------------------------------------
-    const mapField = item.fields?.find((f: any) => f.name === 'vaultdiagram-recovery-map')?.value
-    if (!mapField) return
-
-    let map: any
-    try {
-      map = JSON.parse(mapField)
-    } catch {
-      return // ignore invalid JSON
-    }
-
-    const recovers: string[] = Array.isArray(map.recovers) ? map.recovers : []
-    const recoveredBy: string[] = Array.isArray(map.recovered_by) ? map.recovered_by : []
-
-    recovers.forEach((slug) => {
-      const target = slugToId[slug]
-      if (target)
-        addEdgeUnique({ id: `edge-${source}-${target}`, source, target, style: { stroke: '#8b5cf6' } })
-    })
-
-    recoveredBy.forEach((slug) => {
-      const src = slugToId[slug]
-      if (src)
-        addEdgeUnique({ id: `edge-${src}-${source}`, source: src, target: source, style: { stroke: '#8b5cf6' } })
-    })
-
-    const twofaField = item.fields?.find((f: any) => f.name === 'vaultdiagram-2fa-map')?.value
-    if (twofaField) {
-      try {
-        const map2fa = JSON.parse(twofaField)
-        const providers: string[] = Array.isArray(map2fa.providers) ? map2fa.providers : []
-        providers.forEach((slug: string) => {
-          const src = slugToId[slug]
-          if (src)
-            addEdgeUnique({ id: `edge-2fa-${src}-${source}`, source: src, target: source, style: { stroke: '#0ea5e9', strokeDasharray: '4 2' } })
-        })
-      } catch {}
-    }
-  })
 
   // -------------------------------------------------------------------------
   // Pass 3: iterative layout tweak – place recovery nodes ABOVE dependants
@@ -223,111 +173,8 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
   })
 
   // -----------------------------------------------------------------------
-  // Group nodes based on folder information
+  // Skip folder grouping - items will be displayed without group containers
   // -----------------------------------------------------------------------
-  const folderDefs: Record<string, { name: string; parentId?: string }> = {}
-  ;(vault.folders || []).forEach((f: any) => {
-    folderDefs[f.id] = { name: f.name, parentId: f.parentId }
-  })
-
-  const folderChildren: Record<string, Node[]> = {}
-  ;(vault.folders || []).forEach((f: any) => {
-    folderChildren[f.id] = []
-  })
-
-  vault.items.forEach((item: any) => {
-    if (!item.folderId) return
-    const node = nodes.find((n) => n.id === `item-${item.id}`)
-    if (!node) return
-    folderChildren[item.folderId].push(node)
-  })
-
-  const depthOf = (id: string): number => {
-    let depth = 0
-    let pid = folderDefs[id]?.parentId
-    while (pid) {
-      depth++
-      pid = folderDefs[pid]?.parentId
-    }
-    return depth
-  }
-
-  const depthMap: Record<string, number> = {}
-  Object.keys(folderDefs).forEach(fid => {
-    depthMap[fid] = depthOf(fid)
-  })
-  const maxDepth = Math.max(0, ...Object.values(depthMap))
-
-  const foldersSorted = Object.keys(folderDefs).sort(
-    (a, b) => depthOf(b) - depthOf(a),
-  )
-
-  const groupNodes: Record<string, Node> = {}
-
-  foldersSorted.forEach((fid) => {
-    const children = folderChildren[fid]
-    if (children.length === 0) return
-
-    const def = folderDefs[fid] || { name: fid }
-
-    const minX = Math.min(...children.map((n) => n.position.x))
-    const minY = Math.min(...children.map((n) => n.position.y))
-    const maxX = Math.max(...children.map((n) => n.position.x))
-    const maxY = Math.max(...children.map((n) => n.position.y))
-
-    const pad = shrinkGroups ? 10 : 40
-    let pos = { x: minX - pad, y: minY - pad }
-    let width = maxX - minX + stepX + pad * 2
-    let height = maxY - minY + stepY + pad * 2
-    const groupId = `folder-${fid}`
-
-    const siblings = Object.values(groupNodes).filter(g => (g as any).parentNode === (def.parentId ? `folder-${def.parentId}` : undefined))
-    const rectsOverlap = (a:{x:number,y:number,width:number,height:number}, b:{x:number,y:number,width:number,height:number}) =>
-      a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
-    while (siblings.some(g => rectsOverlap({x:pos.x,y:pos.y,width,height}, {x:g.position.x,y:g.position.y,width:(g.style as any)?.width || 0,height:(g.style as any)?.height || 0}))) {
-      pos.y += height + margin
-    }
-
-    // Ensure all groups behave consistently when moved. Removing the previous
-    // offset keeps the children inside the container during interactive moves.
-
-    children.forEach((n) => {
-      n.position.x -= pos.x
-      n.position.y -= pos.y
-      ;(n as any).parentNode = groupId
-    })
-
-    const depth = depthMap[fid]
-    const zIndex = -(maxDepth - depth + 1)
-
-    const groupNode: Node = {
-      id: groupId,
-      type: 'group',
-      position: pos,
-      data: { label: def.name },
-      style: {
-        width,
-        height,
-        padding: 10,
-        border: '1px dashed #94a3b8',
-        background: '#f8fafc',
-        zIndex,
-      },
-      ...(def.parentId
-        ? { parentNode: `folder-${def.parentId}` }
-        : {}),
-    }
-
-    nodes.push(groupNode)
-    groupNodes[fid] = groupNode
-
-    if (def.parentId) {
-      if (!folderChildren[def.parentId]) {
-        folderChildren[def.parentId] = []
-      }
-      folderChildren[def.parentId].push(groupNode)
-    }
-  })
 
   const oriented = orientEdges(nodes, edges)
   return { nodes, edges: oriented }

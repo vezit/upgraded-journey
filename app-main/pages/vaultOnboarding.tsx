@@ -5,130 +5,9 @@ import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
 import VaultItemList from '@/components/VaultItemList'
 import * as storage from '@/lib/storage'
-import { MagnifyingGlassIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/solid'
-
-const initialCommonServices = [
-  {
-    name: 'Facebook',
-    keywords: ['facebook', 'fb', 'social'],
-    category: 'Social',
-    icon: 'https://facebook.com/favicon.ico',
-    domain: 'facebook.com',
-  },
-  {
-    name: 'Netflix',
-    keywords: ['netflix', 'streaming', 'movies'],
-    category: 'Entertainment',
-    icon: 'https://netflix.com/favicon.ico',
-    domain: 'netflix.com',
-  },
-  {
-    name: 'Microsoft',
-    keywords: ['microsoft', 'office', 'outlook'],
-    category: 'Account',
-    icon: 'https://microsoft.com/favicon.ico',
-    domain: 'microsoft.com',
-  },
-  {
-    name: 'Google',
-    keywords: ['google', 'gmail', 'drive', 'account'],
-    category: 'Email',
-    icon: 'https://google.com/favicon.ico',
-    domain: 'google.com',
-  },
-  {
-    name: 'LinkedIn',
-    keywords: ['linkedin', 'link', 'professional'],
-    category: 'Professional',
-    icon: 'https://linkedin.com/favicon.ico',
-    domain: 'linkedin.com',
-  },
-  {
-    name: 'Instagram',
-    keywords: ['instagram', 'insta', 'photos'],
-    category: 'Social',
-    icon: 'https://instagram.com/favicon.ico',
-    domain: 'instagram.com',
-  },
-  {
-    name: 'Twitter',
-    keywords: ['twitter', 'tweet', 'x'],
-    category: 'Social',
-    icon: 'https://twitter.com/favicon.ico',
-    domain: 'twitter.com',
-  },
-  {
-    name: 'Amazon',
-    keywords: ['amazon', 'shopping', 'aws'],
-    category: 'Shopping',
-    icon: 'https://amazon.com/favicon.ico',
-    domain: 'amazon.com',
-  },
-  {
-    name: 'Apple',
-    keywords: ['apple', 'icloud', 'mac'],
-    category: 'Tech',
-    icon: 'https://apple.com/favicon.ico',
-    domain: 'apple.com',
-  },
-  {
-    name: 'Spotify',
-    keywords: ['spotify', 'music', 'audio'],
-    category: 'Entertainment',
-    icon: 'https://spotify.com/favicon.ico',
-    domain: 'spotify.com',
-  },
-  {
-    name: 'YouTube',
-    keywords: ['youtube', 'video', 'watch'],
-    category: 'Entertainment',
-    icon: 'https://youtube.com/favicon.ico',
-    domain: 'youtube.com',
-  },
-  {
-    name: 'PayPal',
-    keywords: ['paypal', 'payment', 'money'],
-    category: 'Finance',
-    icon: 'https://paypal.com/favicon.ico',
-    domain: 'paypal.com',
-  },
-  {
-    name: 'Discord',
-    keywords: ['discord', 'chat', 'gaming'],
-    category: 'Communication',
-    icon: 'https://discord.com/favicon.ico',
-    domain: 'discord.com',
-  },
-  {
-    name: 'Slack',
-    keywords: ['slack', 'work', 'team'],
-    category: 'Work',
-    icon: 'https://slack.com/favicon.ico',
-    domain: 'slack.com',
-  },
-  {
-    name: 'Dropbox',
-    keywords: ['dropbox', 'storage', 'files'],
-    category: 'Storage',
-    icon: 'https://dropbox.com/favicon.ico',
-    domain: 'dropbox.com',
-  },
-  {
-    name: 'GitHub',
-    keywords: ['github', 'git', 'code'],
-    category: 'Development',
-    icon: 'https://github.com/favicon.ico',
-    domain: 'github.com',
-  },
-]
-
-interface Service {
-  name: string
-  keywords: string[]
-  category: string
-  icon: string
-  domain: string
-}
+import { MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/solid'
+import ServiceIcon from '@/components/ServiceIcon'
+import { popularServices, Service } from '@/lib/popularServices'
 
 interface VaultItem {
   id: string
@@ -149,7 +28,7 @@ interface VaultItem {
 
 export default function VaultOnboarding() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [commonServices, setCommonServices] = useState<Service[]>(initialCommonServices)
+  const commonServices = popularServices
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([])
   const [suggestedServices, setSuggestedServices] = useState<Service[]>([])
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
@@ -341,7 +220,7 @@ export default function VaultOnboarding() {
                   name,
                   keywords: [name.toLowerCase()],
                   category: 'Suggested',
-                  icon: `https://${domain}/favicon.ico`,
+                  icon: `https://logo.clearbit.com/${domain}?size=128`,
                   domain
                 }
               })
@@ -380,10 +259,9 @@ export default function VaultOnboarding() {
       // Try to create a service from the search query
       const serviceName = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
       const domain = `${query.toLowerCase()}.com`
-      
-      // Test if the domain exists by trying to fetch its favicon
-      const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
-      const clearbitUrl = `https://logo.clearbit.com/${domain}`
+
+      // Use Clearbit for a high-quality logo; ServiceIcon handles fallbacks
+      const clearbitUrl = `https://logo.clearbit.com/${domain}?size=128`
       
       const newService: Service = {
         name: serviceName,
@@ -492,9 +370,9 @@ export default function VaultOnboarding() {
                         }`}
                       >
                         <div className="relative">
-                          <img 
-                            src={service.icon} 
-                            alt={service.name} 
+                          <ServiceIcon
+                            domain={service.domain}
+                            alt={service.name}
                             className="w-12 h-12 mb-2"
                             style={{ filter: isServiceAdded(service.name) ? 'grayscale(50%)' : 'none' }}
                           />
@@ -548,9 +426,9 @@ export default function VaultOnboarding() {
                             onClick={() => addServiceToVault(service)}
                             className="flex flex-col items-center p-3 rounded-lg border border-purple-200 bg-purple-50 hover:border-purple-300 hover:bg-purple-100 transition-colors"
                           >
-                            <img 
-                              src={service.icon} 
-                              alt={service.name} 
+                            <ServiceIcon
+                              domain={service.domain}
+                              alt={service.name}
                               className="w-8 h-8 mb-1"
                             />
                             <span className="text-xs font-medium text-gray-900 text-center">
@@ -587,9 +465,9 @@ export default function VaultOnboarding() {
                             onClick={() => addServiceToVault(service)}
                             className="flex flex-col items-center p-3 rounded-lg border border-blue-200 bg-blue-50 hover:border-blue-300 hover:bg-blue-100 transition-colors"
                           >
-                            <img 
-                              src={service.icon} 
-                              alt={service.name} 
+                            <ServiceIcon
+                              domain={service.domain}
+                              alt={service.name}
                               className="w-8 h-8 mb-1"
                             />
                             <span className="text-xs font-medium text-gray-900 text-center">

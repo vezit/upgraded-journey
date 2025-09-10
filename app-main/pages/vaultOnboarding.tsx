@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Head from 'next/head'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
@@ -88,22 +88,38 @@ export default function VaultOnboarding() {
     setGraph(parseVault(data))
   }, [vaultItems, setVault, setGraph])
 
-  // Filter services based on search query
-  const filteredServices = [
-    ...commonServices.filter(service =>
-      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      service.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
-    ),
-    ...dynamicServices.filter(service => 
-      !commonServices.some(cs => cs.name.toLowerCase() === service.name.toLowerCase())
-    )
-  ]
-
   // Check if a service is already added to vault
   const isServiceAdded = (serviceName: string) => {
     return vaultItems.some(item => item.name.toLowerCase() === serviceName.toLowerCase())
   }
+
+  // Filter services based on search query and exclude already added services
+  const filteredPopularServices = useMemo(() => {
+    // First filter by search query and exclude already added services
+    const availableServices = commonServices.filter(service => 
+      !vaultItems.some(item => item.name.toLowerCase() === service.name.toLowerCase()) && (
+        service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    )
+    
+    // If we have a search query, return all matching results
+    if (searchQuery.length > 0) {
+      return availableServices
+    }
+    
+    // Otherwise, return only 16 most relevant services
+    return availableServices.slice(0, 16)
+  }, [commonServices, searchQuery, vaultItems])
+
+  const filteredServices = [
+    ...filteredPopularServices,
+    ...dynamicServices.filter(service => 
+      !commonServices.some(cs => cs.name.toLowerCase() === service.name.toLowerCase()) &&
+      !vaultItems.some(item => item.name.toLowerCase() === service.name.toLowerCase())
+    )
+  ]
 
   // Add service to vault
   const addServiceToVault = (service: Service) => {
@@ -246,22 +262,23 @@ export default function VaultOnboarding() {
 
     setIsSearchingServices(true)
     try {
-      // Try to create a service from the search query
+      // Common TLDs to try for the search query
+      const commonTlds = ['.com', '.org', '.io', '.net', '.co', '.app', '.dev', '.ai', '.tech', '.cloud']
       const serviceName = query.charAt(0).toUpperCase() + query.slice(1).toLowerCase()
-      const domain = `${query.toLowerCase()}.com`
-
-      // Use Clearbit for a high-quality logo; ServiceIcon handles fallbacks
-      const clearbitUrl = `https://logo.clearbit.com/${domain}?size=128`
+      const baseQuery = query.toLowerCase()
       
-      const newService: Service = {
-        name: serviceName,
-        keywords: [query.toLowerCase()],
-        category: 'Discovered',
-        icon: clearbitUrl,
-        domain: domain
-      }
+      const discoveredServices: Service[] = commonTlds.map((tld, index) => {
+        const domain = `${baseQuery}${tld}`
+        return {
+          name: `${serviceName}${tld}`,
+          keywords: [baseQuery, domain],
+          category: 'Discovered',
+          icon: `https://logo.clearbit.com/${domain}?size=128`,
+          domain: domain
+        }
+      })
       
-      setDynamicServices([newService])
+      setDynamicServices(discoveredServices)
     } catch (error) {
       console.error('Error discovering service:', error)
       setDynamicServices([])
@@ -333,7 +350,7 @@ export default function VaultOnboarding() {
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Popular Services
+                    {searchQuery ? 'Search Results' : 'Popular Services'}
                     <span className="text-sm font-normal text-gray-500 ml-2">
                       ({filteredServices.length} services)
                     </span>

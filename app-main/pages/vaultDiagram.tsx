@@ -23,8 +23,8 @@ export default function Vault() {
 
   // Redirect to onboarding if no vault exists
   useEffect(() => {
-    // Clean up legacy version history data
-    storage.cleanupLegacyHistory()
+    // Clean up legacy data
+    storage.cleanupLegacyData()
     
     if (!vault) {
       const savedVault = storage.loadVault()

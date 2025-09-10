@@ -25,9 +25,10 @@ export const clearZIndex = ()=>{
   try{ localStorage.removeItem(Z_KEY) }catch{}
 }
 
-// One-time cleanup function to remove legacy vault-history data
-export const cleanupLegacyHistory = () => {
+// One-time cleanup function to remove legacy data
+export const cleanupLegacyData = () => {
   try { 
-    localStorage.removeItem('vault-history') 
+    localStorage.removeItem('vault-history')
+    localStorage.removeItem('onboarding-vault-items')
   } catch {}
 }

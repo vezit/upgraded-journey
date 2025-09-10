@@ -41,20 +41,13 @@ export default function VaultOnboarding() {
   // Load vault items from localStorage on component mount
   useEffect(() => {
     try {
-      // First, try to load from main vault data
+      // Clean up legacy data
+      storage.cleanupLegacyData()
+      
+      // Load from main vault data only
       const mainVaultData = storage.loadVault()
       if (mainVaultData && mainVaultData.items && Array.isArray(mainVaultData.items)) {
         setVaultItems(mainVaultData.items)
-        return
-      }
-      
-      // If no main vault data, try onboarding-specific storage
-      const savedVaultItems = localStorage.getItem('onboarding-vault-items')
-      if (savedVaultItems) {
-        const parsedItems = JSON.parse(savedVaultItems)
-        if (Array.isArray(parsedItems)) {
-          setVaultItems(parsedItems)
-        }
       }
     } catch (error) {
       console.error('Error loading vault items from localStorage:', error)
@@ -64,18 +57,13 @@ export default function VaultOnboarding() {
   // Save vault items to localStorage whenever they change
   useEffect(() => {
     try {
-      // Save to onboarding-specific storage for recovery
-      localStorage.setItem('onboarding-vault-items', JSON.stringify(vaultItems))
-      
-      // Also sync with main vault storage in real-time
-      if (vaultItems.length > 0) {
-        const vaultData = {
-          items: vaultItems,
-          folders: [],
-          collections: []
-        }
-        storage.saveVault(JSON.stringify(vaultData))
+      // Always save to main vault storage in real-time
+      const vaultData = {
+        items: vaultItems,
+        folders: [],
+        collections: []
       }
+      storage.saveVault(JSON.stringify(vaultData))
     } catch (error) {
       console.error('Error saving vault items to localStorage:', error)
     }
@@ -309,9 +297,6 @@ export default function VaultOnboarding() {
     setVault(vaultData)
     setGraph(parseVault(vaultData))
     storage.saveVault(JSON.stringify(vaultData))
-    
-    // Clear temporary onboarding storage
-    localStorage.removeItem('onboarding-vault-items')
     
     // Redirect to main vault page
     window.location.href = '/vaultDiagram'

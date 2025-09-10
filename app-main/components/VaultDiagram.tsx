@@ -45,11 +45,42 @@ function DiagramContent() {
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string|null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string|null>(null)
   const isInteractive = useStore((s) => s.nodesDraggable && s.nodesConnectable && s.elementsSelectable)
-  const positionsRef = useRef<Record<string,{x:number,y:number}>>(storage.loadPositions())
   const zIndexRef = useRef<Record<string,number>>(storage.loadZIndex())
 
   useEffect(() => {
-    positionsRef.current = storage.loadPositions()
+    // migrate legacy positions from localStorage into vault data
+    try {
+      const raw = localStorage.getItem('vault-positions')
+      if (raw && vault) {
+        const map = JSON.parse(raw)
+        const items = [...vault.items]
+        let dirty = false
+        items.forEach(it => {
+          const id = `item-${it.id}`
+          const pos = map[id]
+          if (pos) {
+            let fields = it.fields ? [...it.fields] : []
+            const idx = fields.findIndex((f: any) => f.name === 'vaultdiagram')
+            let diag: any = {}
+            if (idx > -1) {
+              try { diag = JSON.parse(fields[idx].value) } catch {}
+            }
+            diag.position = pos
+            const value = JSON.stringify(diag)
+            if (idx > -1) fields[idx] = { ...fields[idx], value }
+            else fields.push({ name: 'vaultdiagram', value, type: 0 })
+            it.fields = fields
+            dirty = true
+          }
+        })
+        if (dirty) {
+          const updated = { ...vault, items }
+          useVault.getState().setVault(updated)
+          storage.saveVault(JSON.stringify(updated))
+        }
+        localStorage.removeItem('vault-positions')
+      }
+    } catch {}
     zIndexRef.current = storage.loadZIndex()
   }, [vault])
 
@@ -142,19 +173,43 @@ function DiagramContent() {
     return () => document.removeEventListener('keydown', onKey)
   }, [selectedEdgeId, edges])
 
-  // allow the user to drag nodes and keep the new coordinates in state
+  // allow the user to drag nodes and persist coordinates in vault data
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       const updated = applyNodeChanges(changes, nodes)
-      if(isInteractive){
-        const map = { ...positionsRef.current }
-        changes.forEach(c=>{
-          if(c.type==='position' && (c as any).position && !locked.includes(c.id)){
-            map[c.id] = (c as any).position
+      if (isInteractive) {
+        const v = useVault.getState().vault
+        if (v) {
+          const items = [...v.items]
+          let dirty = false
+          changes.forEach(c => {
+            if (c.type === 'position' && (c as any).position && !locked.includes(c.id)) {
+              const rawId = c.id.replace(/^item-/, '')
+              const idx = items.findIndex((i: any) => String(i.id) === rawId)
+              if (idx !== -1) {
+                const item = { ...items[idx] }
+                let fields = item.fields ? [...item.fields] : []
+                const fIdx = fields.findIndex((f: any) => f.name === 'vaultdiagram')
+                let diag: any = {}
+                if (fIdx > -1) {
+                  try { diag = JSON.parse(fields[fIdx].value) } catch {}
+                }
+                diag.position = (c as any).position
+                const value = JSON.stringify(diag)
+                if (fIdx > -1) fields[fIdx] = { ...fields[fIdx], value }
+                else fields.push({ name: 'vaultdiagram', value, type: 0 })
+                item.fields = fields
+                items[idx] = item
+                dirty = true
+              }
+            }
+          })
+          if (dirty) {
+            const updatedVault = { ...v, items }
+            useVault.getState().setVault(updatedVault)
+            storage.saveVault(JSON.stringify(updatedVault))
           }
-        })
-        positionsRef.current = map
-        storage.savePositions(map)
+        }
       }
       setGraph({ nodes: updated, edges: orientEdges(updated, edges) })
     },

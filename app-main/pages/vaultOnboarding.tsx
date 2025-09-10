@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
+import VaultItemList from '@/components/VaultItemList'
 import * as storage from '@/lib/storage'
 import { MagnifyingGlassIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/solid'
 
@@ -82,6 +83,13 @@ export default function VaultOnboarding() {
       console.error('Error saving vault items to localStorage:', error)
     }
   }, [vaultItems])
+
+  // Sync local items with global stores so other pages stay updated
+  useEffect(() => {
+    const data = { items: vaultItems }
+    setVault(data)
+    setGraph(parseVault(data))
+  }, [vaultItems, setVault, setGraph])
 
   // Filter services based on search query
   const filteredServices = commonServices.filter(service =>
@@ -350,7 +358,7 @@ export default function VaultOnboarding() {
                     </span>
                   </h3>
                 </div>
-                <div className="p-4 max-h-96 overflow-y-auto">
+                <div className="p-4">
                   {vaultItems.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <div className="text-4xl mb-3">🔐</div>
@@ -358,36 +366,9 @@ export default function VaultOnboarding() {
                       <p className="text-xs mt-1">Click on services to add them to your vault</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      {vaultItems.map((item, index) => {
-                        const service = [...commonServices, ...suggestedServices].find(s => 
-                          s.name.toLowerCase() === item.name.toLowerCase()
-                        )
-                        return (
-                          <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                            <img 
-                              src={service?.icon || `https://www.google.com/s2/favicons?domain=${item.name.toLowerCase()}.com&sz=32`}
-                              alt={item.name}
-                              className="w-6 h-6"
-                            />
-                            <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                              <div className="text-xs text-gray-500">Login item</div>
-                            </div>
-                            <button
-                              onClick={() => removeServiceFromVault(item.name)}
-                              className="text-red-500 hover:text-red-700 text-sm"
-                              title="Remove from vault"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <VaultItemList onEdit={() => {}} />
                   )}
                 </div>
-                
                 {vaultItems.length > 0 && (
                   <div className="p-4 border-t border-gray-200">
                     <button

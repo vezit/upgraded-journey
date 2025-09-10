@@ -1,23 +1,18 @@
-import UploadZone from '@/components/UploadZone'
-import DeleteZone from '@/components/DeleteZone'
 import VaultDiagram from '@/components/VaultDiagram'
 import ChatInterface from '@/components/ChatInterface'
 import ExportButton from '@/components/ExportButton'
 import VaultLostButton from '@/components/VaultLostButton'
 import VersionHistoryModal from '@/components/VersionHistoryModal'
-import TemplateZone from '@/components/TemplateZone'
 import VaultItemList from '@/components/VaultItemList'
 import EditItemModal from '@/components/EditItemModal'
 import { useState, useEffect } from 'react'
 import { parseVault } from '@/lib/parseVault'
-import * as storage from '@/lib/storage'
 import { useGraph } from '@/contexts/GraphStore'
 import { useVault } from '@/contexts/VaultStore'
-import { useHiddenStore } from '@/contexts/HiddenStore'
 
 export default function Vault() {
   const { setGraph } = useGraph()
-  const { vault, setVault } = useVault()
+  const { vault } = useVault()
   const [editIndex, setEditIndex] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -27,31 +22,14 @@ export default function Vault() {
   const [shrinkGroups, setShrinkGroups] = useState(false)
 
 
-  const { clear } = useHiddenStore()
-
-  const handleLoad = (data: any) => {
-    setVault(data)
-    setGraph(parseVault(data, shrinkGroups))
-    clear()
-    storage.saveVault(JSON.stringify(data))
-  }
-
   useEffect(() => {
     if (vault) {
       setGraph(parseVault(vault, shrinkGroups))
     }
-  }, [shrinkGroups])
+  }, [vault, shrinkGroups, setGraph])
 
   return (
     <div className="p-4 flex flex-col gap-4 mx-auto px-6">
-      {vault ? (
-        <DeleteZone />
-      ) : (
-        <>
-          <UploadZone onLoad={handleLoad} />
-          <TemplateZone onGenerate={handleLoad} />
-        </>
-      )}
       {vault && (
         <div className="flex gap-2">
           <ExportButton />
@@ -88,6 +66,7 @@ export default function Vault() {
         <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
       )}
       {creating && <EditItemModal onClose={() => setCreating(false)} />}
+      {showHistory && <VersionHistoryModal onClose={() => setShowHistory(false)} />}
     </div>
   )
 }

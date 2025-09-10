@@ -4,8 +4,8 @@ import { useLanguage } from '@/contexts/LanguageStore'
 import { useEffect } from 'react'
 
 const labels = {
-  en: { home: 'Home', diagram: 'Diagram', upload: 'Upload', chatgpt: 'AI Chat', about: 'About', en: 'English', da: 'Dansk' },
-  da: { home: 'Hjem', diagram: 'Diagram', upload: 'Upload', chatgpt: 'AI Chat', about: 'Om', en: 'Engelsk', da: 'Dansk' }
+  en: { home: 'Home', diagram: 'Diagram', upload: 'Upload', onboarding: 'Onboarding', chatgpt: 'AI Chat', about: 'About', en: 'English', da: 'Dansk' },
+  da: { home: 'Hjem', diagram: 'Diagram', upload: 'Upload', onboarding: 'Onboarding', chatgpt: 'AI Chat', about: 'Om', en: 'Engelsk', da: 'Dansk' }
 }
 
 export default function Header() {
@@ -26,6 +26,7 @@ export default function Header() {
     <header className="bg-gray-800 text-white p-4 flex justify-between">
       <nav className="flex gap-4">
         <Link href="/">{t.home}</Link>
+        <Link href="/vaultOnboarding">{t.onboarding}</Link>
         <Link href="/vaultDiagram">{t.diagram}</Link>
         <Link href="/vaultUpload">{t.upload}</Link>
         <Link href="/vaultChatGPT">{t.chatgpt}</Link>

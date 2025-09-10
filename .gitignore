@@ -30,3 +30,4 @@ app-main/.env.production
 app-main/.env.prod
 _ngrok_auth
 app-main/package-lock.json
+ngrok

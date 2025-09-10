@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import VaultItemList from '@/components/VaultItemList'
+import EditItemModal from '@/components/EditItemModal'
+import { parseVault } from '@/lib/parseVault'
+import { createTemplate } from '@/lib/sampleVault'
+import { useGraph } from '@/contexts/GraphStore'
+import { useVault } from '@/contexts/VaultStore'
 
 const CHAT_STORAGE_KEY = 'vault-chatgpt-history'
 
@@ -38,6 +44,11 @@ export default function VaultChatGPT() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [hasLoadedFromCache, setHasLoadedFromCache] = useState(false)
+  
+  const { setGraph } = useGraph()
+  const { vault, setVault } = useVault()
+  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [creating, setCreating] = useState(false)
 
   // Load chat history from localStorage on component mount
   useEffect(() => {
@@ -63,6 +74,17 @@ export default function VaultChatGPT() {
       console.error('Error saving chat history:', error)
     }
   }, [messages])
+
+  // Initialize vault with template data
+  useEffect(() => {
+    if (!vault) {
+      const templateData = createTemplate()
+      setVault(templateData)
+      setGraph(parseVault(templateData))
+    } else {
+      setGraph(parseVault(vault))
+    }
+  }, [vault, setVault, setGraph])
 
   const sendMessage = async () => {
     if (!input.trim()) return
@@ -380,6 +402,31 @@ export default function VaultChatGPT() {
 
             </div>
           </div>
+
+          {/* Bitwarden-like Vault Interface */}
+          <div className="mt-6 bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+              <h3 className="text-sm font-medium text-gray-900">
+                Your Vault Items
+                <span className="text-gray-500 ml-2">Manage your secure credentials</span>
+              </h3>
+            </div>
+            <div className="p-4">
+              {vault ? (
+                <div className="bg-gray-50 rounded-lg p-2 min-h-[500px]">
+                  <VaultItemList
+                    onEdit={(i) => setEditIndex(i)}
+                    onCreate={() => setCreating(true)}
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-4xl mb-4">�</div>
+                  <p className="text-sm">Loading your vault items...</p>
+                </div>
+              )}
+            </div>
+          </div>
           
           {/* Info Cards */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -447,6 +494,12 @@ export default function VaultChatGPT() {
           </div>
         </div>
       </div>
+
+      {/* Edit/Create Item Modals */}
+      {editIndex !== null && (
+        <EditItemModal index={editIndex} onClose={() => setEditIndex(null)} />
+      )}
+      {creating && <EditItemModal onClose={() => setCreating(false)} />}
     </>
   )
 }

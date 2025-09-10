@@ -1,5 +1,5 @@
 
-export type TemplateName = 'personal'
+export type TemplateName = 'corporate'
 
 export interface VaultItem {
   id: string
@@ -20,74 +20,76 @@ export interface VaultData {
   folders?: { id: string; name: string; parentId?: string }[]
 }
 
-const personalTemplate: VaultData = {
+const corporateTemplate: VaultData = {
     folders: [
-      { id: 'personal', name: 'Beginner Template' },
+      { id: 'personal', name: 'Corporate Template' },
     ],
     items: [
       {
         id: '5812e279-62f3-4cd6-a3b2-e01058b7c3fb',
         type: 1,
-        name: 'Facebook',
+        name: 'Postman',
         folderId: 'personal',
         login: {
-          username: 'john.doe@example.com',
+          username: 'john.doe@domain.com',
           password: '',
-          uris: [{ uri: 'https://facebook.com', match: null }],
+          uris: [{ uri: 'https://postman.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'facebook-c3fb', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/facebook.com?size=80', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","facebook-2fa-1111"]}', type: 0 },
+          { name: 'vaultdiagram-id', value: 'postman-c3fb', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/postman.com?size=80', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","postman-2fa-1111"]}', type: 0 },
         ],
       },
       {
         id: 'af4a6fe3-9213-4b0f-8d83-0bf5cf251863',
         type: 1,
-        name: 'Gmail',
+        name: 'Corporate Mail (john.doe@domain.com)',
         folderId: 'personal',
         login: {
-          username: 'john.doe@example.com',
+          username: 'john.doe@domain.com',
           password: '',
-          uris: [{ uri: 'https://gmail.com', match: null }],
+          uris: [{ uri: 'https://mail.domain.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'gmail-1863', type: 0 },
-          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/gmail.com?size=80', type: 0 },
+          { name: 'vaultdiagram-id', value: 'corporate-mail-1863', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/microsoft.com?size=80', type: 0 },
           { name: 'recovery_node', value: 'true', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["facebook-c3fb","linkedin-7845","netflix-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["postman-c3fb","microsoft-7845","coolify-30a1","vaultwarden-dev-2431"],"recovered_by":["phone-pixel-7a-2b11"]}', type: 0 },
         ],
       },
       {
         id: 'a17ed712-5dcc-4b78-b9a7-9109a3567845',
         type: 1,
-        name: 'LinkedIn',
+        name: 'Microsoft 365',
         folderId: 'personal',
         login: {
-          username: 'john.doe@example.com',
+          username: 'john.doe@domain.com',
           password: '',
-          uris: [{ uri: 'https://linkedin.com', match: null }],
+          uris: [{ uri: 'https://office.com', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'linkedin-7845', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
-          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","gmail-1863","linkedin-2fa-2222"]}', type: 0 },
+          { name: 'vaultdiagram-id', value: 'microsoft-7845', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/microsoft.com?size=80', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-2fa-map', value: '{"providers":["phone-pixel-7a-2b11","corporate-mail-1863","microsoft-2fa-2222"]}', type: 0 },
         ],
       },
       {
         id: 'f9e5bffb-7fdc-4ec0-ae19-390940c730a1',
         type: 1,
-        name: 'Netflix',
+        name: 'Coolify',
         folderId: 'personal',
         login: {
-          username: 'john.doe@example.com',
+          username: 'john.doe@domain.com',
           password: '',
-          uris: [{ uri: 'https://netflix.com', match: null }],
+          uris: [{ uri: 'https://coolify.io', match: null }],
         },
         fields: [
-          { name: 'vaultdiagram-id', value: 'netflix-30a1', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-id', value: 'coolify-30a1', type: 0 },
+          { name: 'vaultdiagram-logo-url', value: 'https://logo.clearbit.com/coolify.io?size=80', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
         ],
       },
       {
@@ -106,7 +108,7 @@ const personalTemplate: VaultData = {
           { name: 'recovery_node', value: 'true', type: 0 },
           { name: 'vaultdiagram-logo-url', value: '/img/phone.svg', type: 0 },
           { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["gmail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovers":["corporate-mail-1863"]}', type: 0 },
           { name: 'phone_number', value: '+45 12345678', type: 0 },
         ],
       },
@@ -122,20 +124,20 @@ const personalTemplate: VaultData = {
         },
         fields: [
           { name: 'vaultdiagram-id', value: 'vaultwarden-dev-2431', type: 0 },
-          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["gmail-1863"]}', type: 0 },
+          { name: 'vaultdiagram-recovery-map', value: '{"recovered_by":["corporate-mail-1863"]}', type: 0 },
         ],
       },
       {
         id: '8cf2d705-2fa1-4c0e-a111-111111111111',
         type: 1,
-        name: 'Facebook 2FA',
+        name: 'Postman 2FA',
         folderId: 'personal',
         login: {},
         fields: [
-          { name: 'vaultdiagram-id', value: 'facebook-2fa-1111', type: 0 },
+          { name: 'vaultdiagram-id', value: 'postman-2fa-1111', type: 0 },
           {
             name: 'vaultdiagram-logo-url',
-            value: 'https://logo.clearbit.com/facebook.com?size=80',
+            value: 'https://logo.clearbit.com/postman.com?size=80',
             type: 0,
           },
           { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
@@ -144,14 +146,14 @@ const personalTemplate: VaultData = {
       {
         id: '9df2d705-2fa1-4c0e-a222-222222222222',
         type: 1,
-        name: 'LinkedIn 2FA',
+        name: 'Microsoft 2FA',
         folderId: 'personal',
         login: {},
         fields: [
-          { name: 'vaultdiagram-id', value: 'linkedin-2fa-2222', type: 0 },
+          { name: 'vaultdiagram-id', value: 'microsoft-2fa-2222', type: 0 },
           {
             name: 'vaultdiagram-logo-url',
-            value: 'https://logo.clearbit.com/linkedin.com?size=80',
+            value: 'https://logo.clearbit.com/microsoft.com?size=80',
             type: 0,
           },
           { name: 'vaultdiagram-nested-domain', value: '2fas.com', type: 0 },
@@ -161,5 +163,5 @@ const personalTemplate: VaultData = {
 };
 
 export function createTemplate(): VaultData {
-  return JSON.parse(JSON.stringify(personalTemplate))
+  return JSON.parse(JSON.stringify(corporateTemplate))
 }

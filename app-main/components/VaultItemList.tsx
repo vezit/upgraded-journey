@@ -29,6 +29,9 @@ const domainFrom = (raw?: string) => {
   }
 }
 
+const logoFor = (domain?: string) =>
+  domain ? `https://logo.clearbit.com/${domain}?size=80` : '/img/default.svg'
+
 
 export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
   const { vault } = useVault()
@@ -188,7 +191,10 @@ export default function VaultItemList({ onEdit, onClose, onCreate }: Props) {
               const item = items[index]
               const uri = item.login?.uris?.[0]?.uri
               const domain = domainFrom(uri)
-              const logo = `https://www.google.com/s2/favicons?domain=${domain || 'example.com'}`
+              const customLogo = item.fields?.find(
+                (f: any) => f.name === 'vaultdiagram-logo-url',
+              )?.value
+              const logo = customLogo || logoFor(domain)
               const isRecovery = item.fields?.some(
                 (f: any) =>
                   f.name === 'recovery_node' &&

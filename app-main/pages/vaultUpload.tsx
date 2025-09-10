@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as storage from '@/lib/storage';
+import VaultItemList from '@/components/VaultItemList';
 
 interface Account {
   account: string;
@@ -100,12 +101,13 @@ export default function VaultUpload() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Vault Upload</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Upload Section */}
-        <div>
+    <div className="p-8 max-w-6xl mx-auto flex gap-8">
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold mb-6">Vault Upload</h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Upload Section */}
+          <div>
           <h2 className="text-xl font-semibold mb-4">Upload New File</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -216,7 +218,9 @@ export default function VaultUpload() {
             </button>
           )}
         </div>
+        </div>
       </div>
+      <VaultItemList onEdit={() => {}} />
     </div>
   );
 }

@@ -120,6 +120,7 @@ export const parseVault = (vault: any, shrinkGroups = false) => {
         username: item.login?.username,
         isRecovery,
         has2fa,
+        genericIconId: diag.genericIcon,
       },
     })
   })

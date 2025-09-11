@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
@@ -64,8 +64,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         ...messages
       ],
-      max_tokens: 500,
-      temperature: 0.7,
+      max_completion_tokens: 2000,
+      temperature: 1,
     })
 
     const aiMessage = completion.choices[0]?.message?.content

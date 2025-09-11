@@ -111,18 +111,61 @@ export default function VaultOnboarding() {
     )
   ]
 
+  // Generate realistic credentials for a service
+  const generateCredentialsForService = (serviceName: string, domain: string) => {
+    // Generate realistic username patterns
+    const patterns = [
+      `user@${domain}`,
+      `${serviceName.toLowerCase().replace(/\s+/g, '.')}@gmail.com`,
+      `${serviceName.toLowerCase().replace(/\s+/g, '')}user@outlook.com`,
+      `john.doe@${domain}`,
+      `${serviceName.toLowerCase().replace(/\s+/g, '')}123@gmail.com`
+    ]
+    
+    const username = patterns[Math.floor(Math.random() * patterns.length)]
+    
+    // Generate secure but memorable passwords
+    const adjectives = ['Quick', 'Smart', 'Bright', 'Swift', 'Strong', 'Clear', 'Sharp', 'Bold']
+    const nouns = ['Tiger', 'Eagle', 'Storm', 'Ocean', 'Mountain', 'River', 'Forest', 'Star']
+    const numbers = ['123', '456', '789', '2024', '2025', '100', '200', '999']
+    const symbols = ['!', '@', '#', '$', '%']
+    
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+    const noun = nouns[Math.floor(Math.random() * nouns.length)]
+    const number = numbers[Math.floor(Math.random() * numbers.length)]
+    const symbol = symbols[Math.floor(Math.random() * symbols.length)]
+    
+    const password = `${adjective}${noun}${number}${symbol}`
+    
+    return { username, password }
+  }
+
   // Add service to vault
   const addServiceToVault = (service: Service) => {
     if (isServiceAdded(service.name)) return
 
     const vaultId = service.name.toLowerCase().replace(/\s+/g, '-')
+    
+    // Use AI-generated credentials if available, otherwise generate them
+    let username: string
+    let password: string
+    
+    if (service.username && service.password) {
+      username = service.username
+      password = service.password
+    } else {
+      const generated = generateCredentialsForService(service.name, service.domain)
+      username = generated.username
+      password = generated.password
+    }
+    
     const newItem: VaultItem = {
       id: crypto.randomUUID(),
       type: 1, // Login type
       name: service.name,
       login: {
-        username: '',
-        password: '',
+        username: username,
+        password: password,
         uris: [{ uri: `https://${service.domain}`, match: null }]
       },
       fields: [
@@ -137,7 +180,7 @@ export default function VaultOnboarding() {
           type: 0
         }
       ],
-      notes: `Added from onboarding - ${service.category} service`
+      notes: `Added from onboarding - ${service.category} service with ${service.username ? 'AI-generated' : 'random'} credentials`
     }
 
     const updatedItems = [...vaultItems, newItem]
@@ -188,7 +231,7 @@ export default function VaultOnboarding() {
         body: JSON.stringify({
           messages: [{
             role: 'user',
-            content: `From the following text, extract the names of online services or websites the user has accounts with. Respond with ONLY a JSON array of service names, no explanation: ${textInput}`
+            content: `From the following text, extract online services and create vault items with realistic usernames and passwords. Respond with ONLY a JSON array of objects with this structure: [{"name": "ServiceName", "username": "realistic.email@domain.com", "password": "SecurePass123!", "domain": "service.com"}]. Make usernames realistic (use common patterns like firstname.lastname, firstnamelastname, or simple usernames) and passwords secure but memorable: ${textInput}`
           }]
         })
       })
@@ -201,23 +244,29 @@ export default function VaultOnboarding() {
 
           if (Array.isArray(services)) {
             const newItems: VaultItem[] = services
-              .filter((name: string) => typeof name === 'string' && !isServiceAdded(name))
-              .map((name: string) => {
-                const domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`
+              .filter((service: any) => 
+                service.name && typeof service.name === 'string' && 
+                !isServiceAdded(service.name)
+              )
+              .map((service: any) => {
+                const domain = service.domain || `${service.name.toLowerCase().replace(/\s+/g, '')}.com`
+                const username = service.username || `user@${domain}`
+                const password = service.password || 'SecurePassword123!'
+                
                 return {
                   id: crypto.randomUUID(),
                   type: 1,
-                  name,
+                  name: service.name,
                   login: {
-                    username: '',
-                    password: '',
+                    username: username,
+                    password: password,
                     uris: [{ uri: `https://${domain}`, match: null }]
                   },
                   fields: [
                     {
                       name: 'vaultdiagram',
                       value: JSON.stringify({
-                        id: name.toLowerCase().replace(/\s+/g, '-'),
+                        id: service.name.toLowerCase().replace(/\s+/g, '-'),
                         logoUrl: `https://logo.clearbit.com/${domain}?size=128`,
                         recoveryMap: {},
                         twofaMap: {}
@@ -225,7 +274,7 @@ export default function VaultOnboarding() {
                       type: 0
                     }
                   ],
-                  notes: 'Added from text input'
+                  notes: 'Added from text input with AI-generated credentials'
                 } as VaultItem
               })
 
@@ -261,7 +310,7 @@ export default function VaultOnboarding() {
         body: JSON.stringify({
           messages: [{
             role: 'user',
-            content: `Based on these services: ${serviceNames}, suggest 4 additional popular online services that users typically use alongside these. Focus on major platforms and services, not sub-services like "Google Drive" (just use "Google"). Respond with ONLY a JSON array of service names, no explanation. Example: ["Zoom", "Trello", "WhatsApp", "Notion"]`
+            content: `Based on these services: ${serviceNames}, suggest 4 additional popular online services with realistic credentials. Focus on major platforms and services, not sub-services like "Google Drive" (just use "Google"). Respond with ONLY a JSON array: [{"name": "ServiceName", "username": "realistic.email@domain.com", "password": "SecurePass123!", "domain": "service.com"}]. Make usernames realistic and passwords secure but memorable.`
           }]
         }),
       })
@@ -276,20 +325,22 @@ export default function VaultOnboarding() {
           if (Array.isArray(suggestions)) {
             // Convert suggestions to service objects
             const newSuggestions: Service[] = suggestions
-              .filter((name: string) => 
-                typeof name === 'string' && 
-                !isServiceAdded(name) &&
-                !commonServices.some(s => s.name.toLowerCase() === name.toLowerCase())
+              .filter((service: any) => 
+                service.name && typeof service.name === 'string' && 
+                !isServiceAdded(service.name) &&
+                !commonServices.some(s => s.name.toLowerCase() === service.name.toLowerCase())
               )
               .slice(0, 4)
-              .map((name: string) => {
-                const domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`
+              .map((service: any) => {
+                const domain = service.domain || `${service.name.toLowerCase().replace(/\s+/g, '')}.com`
                 return {
-                  name,
-                  keywords: [name.toLowerCase()],
+                  name: service.name,
+                  keywords: [service.name.toLowerCase()],
                   category: 'Suggested',
                   icon: `https://logo.clearbit.com/${domain}?size=128`,
-                  domain
+                  domain: domain,
+                  username: service.username,
+                  password: service.password
                 }
               })
             
@@ -403,7 +454,7 @@ export default function VaultOnboarding() {
             </div>
             <div className="bg-white rounded-lg shadow-sm p-4 max-w-2xl mx-auto mt-4">
               <textarea
-                placeholder="Paste any text that mentions the services you use..."
+                placeholder="Paste any text that mentions the services you use (emails, documents, etc.) and AI will extract them and generate realistic usernames and passwords..."
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 rows={4}
@@ -414,8 +465,11 @@ export default function VaultOnboarding() {
                 disabled={isGeneratingFromText}
                 className="mt-3 w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50"
               >
-                {isGeneratingFromText ? 'Generating...' : 'Generate Services'}
+                {isGeneratingFromText ? 'Generating Services & Credentials...' : 'Generate Services with Credentials'}
               </button>
+              <p className="text-xs text-gray-500 mt-2">
+                AI will create realistic usernames and secure passwords for each service
+              </p>
             </div>
           </div>
 
@@ -472,6 +526,11 @@ export default function VaultOnboarding() {
                         }`}>
                           {service.category === 'Discovered' ? '🔍 Found' : service.category}
                         </span>
+                        {!isServiceAdded(service.name) && (
+                          <span className="text-xs text-blue-600 font-medium">
+                            + credentials
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -505,7 +564,40 @@ export default function VaultOnboarding() {
                         {suggestedServices.map((service, index) => (
                           <button
                             key={`suggested-${index}`}
-                            onClick={() => addServiceToVault(service)}
+                            onClick={() => {
+                              // Add service with AI-generated credentials if available
+                              if (service.username && service.password) {
+                                const vaultId = service.name.toLowerCase().replace(/\s+/g, '-')
+                                const newItem: VaultItem = {
+                                  id: crypto.randomUUID(),
+                                  type: 1,
+                                  name: service.name,
+                                  login: {
+                                    username: service.username,
+                                    password: service.password,
+                                    uris: [{ uri: `https://${service.domain}`, match: null }]
+                                  },
+                                  fields: [
+                                    {
+                                      name: 'vaultdiagram',
+                                      value: JSON.stringify({
+                                        id: vaultId,
+                                        logoUrl: service.icon,
+                                        recoveryMap: {},
+                                        twofaMap: {}
+                                      }),
+                                      type: 0
+                                    }
+                                  ],
+                                  notes: `AI-suggested service with generated credentials`
+                                }
+                                const updatedItems = [...vaultItems, newItem]
+                                setVaultItems(updatedItems)
+                                getSuggestedServices(updatedItems)
+                              } else {
+                                addServiceToVault(service)
+                              }
+                            }}
                             className="flex flex-col items-center p-3 rounded-lg border border-purple-200 bg-purple-50 hover:border-purple-300 hover:bg-purple-100 transition-colors"
                           >
                             <ServiceIcon
@@ -516,6 +608,11 @@ export default function VaultOnboarding() {
                             <span className="text-xs font-medium text-gray-900 text-center">
                               {service.name}
                             </span>
+                            {service.username && (
+                              <span className="text-xs text-purple-600 text-center">
+                                + credentials
+                              </span>
+                            )}
                           </button>
                         ))}
                       </div>

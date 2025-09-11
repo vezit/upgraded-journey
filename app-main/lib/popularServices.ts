@@ -9,6 +9,8 @@ export interface Service {
   category: string
   icon: string
   domain: string
+  username?: string
+  password?: string
 }
 
 const ignore = new Set([

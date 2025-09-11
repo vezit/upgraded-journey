@@ -35,7 +35,7 @@ Right-click any node in the diagram and choose **Lost Access** to simulate losin
 ## Setup
 
 After installing dependencies with `npm install`, start the development server with `npm run dev`.
-Open the vault page and you will see a chat panel next to the diagram. Enter your OpenAI API key and select a model from the drop-down to enable chatting with ChatGPT. The key and model are saved in your browser's local storage.
+Open the vault page and you will see a chat panel next to the diagram. Enter your OpenAI API key and select a model from the drop-down to enable chatting with ChatGPT. The key and model are saved in your browser's local storage. Available models and their labels are defined in `app-main/lib/aiModels.ts` for easy management.
 The assistant now starts by asking whether you use Bitwarden or Vaultwarden and will automatically create items when you provide service details.
 
 Use the list panel's **New** button to create additional items with the same UI used for editing.

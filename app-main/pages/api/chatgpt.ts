@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import OpenAI from 'openai'
+import { DEFAULT_MODEL } from '@/lib/aiModels'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -18,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-mini-2025-08-07',
+      model: DEFAULT_MODEL,
       messages: [
         {
           role: 'system',

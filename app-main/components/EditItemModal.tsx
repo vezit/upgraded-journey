@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
-import { genericIcons, getGenericIconById, type GenericIcon } from '@/lib/genericIcons'
+import { genericIcons, getGenericIconById } from '@/lib/genericIcons'
 
 import * as storage from '@/lib/storage'
 
@@ -25,7 +25,7 @@ export default function EditItemModal({ index, onClose }: Props) {
   const original =
     index !== undefined && index > -1 ? vault.items?.[index] : null
 
-  const [item, setItem] = useState<any>(() =>
+  const initialItemRef = useRef<any>(
     original
       ? JSON.parse(JSON.stringify(original))
       : {
@@ -36,12 +36,33 @@ export default function EditItemModal({ index, onClose }: Props) {
           fields: [],
         }
   )
+
+  const [item, setItem] = useState<any>(() =>
+    JSON.parse(JSON.stringify(initialItemRef.current))
+  )
   const [showPassword, setShowPassword] = useState(false)
   const [showTotp, setShowTotp] = useState(false)
   const [newFieldType, setNewFieldType] = useState('0')
   const [mapTarget, setMapTarget] = useState('')
   const [twofaTarget, setTwofaTarget] = useState('')
   const [showIconPicker, setShowIconPicker] = useState(false)
+
+  const handleClose = useCallback(() => {
+    const hasChanges =
+      JSON.stringify(item) !== JSON.stringify(initialItemRef.current)
+    if (hasChanges && !window.confirm('Discard unsaved changes?')) {
+      return
+    }
+    onClose()
+  }, [item, onClose])
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [handleClose])
 
   const updateItemState = (partial: any) =>
     setItem((prev: any) => ({ ...prev, ...partial }))
@@ -245,7 +266,7 @@ export default function EditItemModal({ index, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClose}>
       <div className="bg-white rounded-md shadow-md w-full max-w-xl p-6" onClick={e => e.stopPropagation()}>
         <h2 className="text-xl font-semibold mb-4">
           {index !== undefined && index > -1 ? 'Edit Item' : 'New Item'}
@@ -645,7 +666,7 @@ export default function EditItemModal({ index, onClose }: Props) {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="ml-3 bg-gray-300 text-gray-800 font-medium px-4 py-2 rounded hover:bg-gray-400"
             >
               Cancel

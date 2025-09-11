@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as storage from '@/lib/storage';
 import VaultItemList from '@/components/VaultItemList';
+import { useVault } from '@/contexts/VaultStore';
 
 interface Account {
   account: string;
@@ -14,6 +15,7 @@ export default function VaultUpload() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountCount, setAccountCount] = useState(0);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{name: string, content: string, timestamp: number}>>([]);
+  const { setVault } = useVault();
 
   // Load cached uploaded files on component mount
   useEffect(() => {
@@ -82,12 +84,17 @@ export default function VaultUpload() {
         body: JSON.stringify({ content: fileContent }),
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         setOutput(data.result || '');
         setAccounts(data.accounts || []);
         setAccountCount(data.count || 0);
-        
+
+        if (data.bitwarden) {
+          setVault(data.bitwarden);
+          storage.saveVault(JSON.stringify(data.bitwarden));
+        }
+
         // Save the file to cache after successful upload
         if (fileName && fileContent) {
           saveUploadedFile(fileName, fileContent);

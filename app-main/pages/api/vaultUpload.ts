@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { randomUUID } from 'crypto';
 
 interface Account {
   account: string;
@@ -190,19 +191,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Content length:', content.length);
     
     const accounts = parseFileContent(content);
-    
+
     // Format output similar to the Python script
     const output = accounts.map(({ account, password }: Account) => `${account}: ${password}`).join('\n');
-    
-    res.status(200).json({ 
+
+    // Build Bitwarden-compatible structure
+    const bitwarden = {
+      vaults: ['My Vault'],
+      organizations: [],
+      folders: [{ id: 'personal', name: 'Imported' }],
+      items: accounts.map(({ account, password }: Account) => ({
+        id: randomUUID(),
+        type: 1,
+        name: account,
+        vault: 'My Vault',
+        folderId: 'personal',
+        login: {
+          username: account,
+          password,
+          uris: []
+        },
+        fields: []
+      }))
+    };
+
+    res.status(200).json({
       result: output,
       count: accounts.length,
-      accounts: accounts
+      accounts: accounts,
+      bitwarden
     });
   } catch (error) {
     console.error('Error processing file:', error);
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Failed to process file' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to process file'
     });
   }
 }

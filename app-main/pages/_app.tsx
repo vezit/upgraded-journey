@@ -39,12 +39,16 @@ export default function App({ Component, pageProps }: AppProps) {
     }
   }, [router])
 
+  // Pages that should not show footer
+  const noFooterPages = ['/vaultOnboardingV2']
+  const shouldShowFooter = !noFooterPages.includes(router.pathname)
+
   const content = (
     <>
       <AlphaBanner />
       <Header />
       <Component {...pageProps} />
-      <Footer />
+      {shouldShowFooter && <Footer />}
     </>
   )
 

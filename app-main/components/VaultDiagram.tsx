@@ -19,7 +19,6 @@ import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
 import { useLockedStore } from '@/contexts/LockedStore'
 import { useLostStore } from '@/contexts/LostStore'
-import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
 import EditItemModal from './EditItemModal'
 import VaultNode from './VaultNode'
@@ -35,8 +34,8 @@ function DiagramContent() {
   const { nodes, edges, setGraph, removeEdge } = useGraph()
   const { hidden } = useHiddenStore()
   const { locked } = useLockedStore()
-  const { lost, clearLost, markLost } = useLostStore()
-  const { vault, addRecovery, removeRecovery, removeTwofa } = useVault()
+  const { lost, clearLost } = useLostStore()
+  const { vault } = useVault()
   const diagramRef = useRef<HTMLDivElement>(null)
   const [menu, setMenu] = useState<{x:number,y:number,id:string}|null>(null)
   const [edgeMenu, setEdgeMenu] = useState<{x:number,y:number,id:string,edge:Edge}|null>(null)
@@ -131,22 +130,7 @@ function DiagramContent() {
 
   const handleDeleteEdge = (edge: Edge) => {
     if (!confirm('Delete this connection?')) return
-    if (vault) {
-      const src = edge.source.replace(/^item-/, '')
-      const tgt = edge.target.replace(/^item-/, '')
-      if (edge.id.startsWith('edge-2fa-')) {
-        removeTwofa(tgt, src)
-      } else {
-        removeRecovery(src, tgt)
-      }
-      const updated = useVault.getState().vault
-      if (updated) {
-        setGraph(parseVault(updated))
-        storage.saveVault(JSON.stringify(updated))
-      }
-    } else {
-      removeEdge(edge.id)
-    }
+    removeEdge(edge.id)
     setEdgeMenu(null)
     setSelectedEdgeId(null)
   }
@@ -218,25 +202,10 @@ function DiagramContent() {
 
   const onConnect = useCallback(
     (conn: Connection) => {
-      const targetNode = nodes.find(n => n.id === conn.target)
-      if (!targetNode?.data?.isRecovery) {
-        alert('Only recovery methods can be targets')
-        return
-      }
-
-      if (vault && conn.source && conn.target) {
-        const srcId = conn.source.replace(/^item-/, '')
-        const tgtId = conn.target.replace(/^item-/, '')
-        addRecovery(srcId, tgtId)
-        const updated = useVault.getState().vault
-        if (updated) setGraph(parseVault(updated))
-      } else {
-        // fallback to a visual edge only
-        const newEdges = addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges)
-        setGraph({ nodes, edges: orientEdges(nodes, newEdges) })
-      }
+      const newEdges = addEdge({ ...conn, style: { stroke: '#8b5cf6' } }, edges)
+      setGraph({ nodes, edges: orientEdges(nodes, newEdges) })
     },
-    [nodes, edges, setGraph, vault, addRecovery]
+    [nodes, edges, setGraph]
   )
 
   const nodesWithLock = nodes.map(n =>

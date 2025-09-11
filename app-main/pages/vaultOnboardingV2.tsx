@@ -150,72 +150,48 @@ export default function VaultOnboardingV2() {
 
   const generateVaultItemsFromText = async (text: string) => {
     try {
-      const response = await fetch('/api/chatgpt', {
+      const response = await fetch('/api/parse-vault', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messages: [{
-            role: 'user',
-            content: `From the following text, extract online services and create vault items with realistic usernames and passwords. Respond with ONLY a JSON array of objects with this structure: [{"name": "ServiceName", "username": "realistic.email@domain.com", "password": "SecurePass123!", "domain": "service.com"}]. Make usernames realistic and passwords secure but memorable: ${text}`
-          }]
-        })
+        body: JSON.stringify({ text })
       })
 
-      const data = await response.json()
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to parse vault data')
+      }
 
-      if (response.ok && data.message) {
-        try {
-          const services = JSON.parse(data.message.replace(/```json\n?|\n?```/g, ''))
+      const { data } = await response.json()
+      
+      if (data.items && Array.isArray(data.items)) {
+        const newItems: VaultItem[] = data.items
+          .filter((item: any) => 
+            item.name && typeof item.name === 'string' && 
+            !vaultItems.some(existing => existing.name.toLowerCase() === item.name.toLowerCase())
+          )
+          .map((item: any) => ({
+            id: item.id || crypto.randomUUID(),
+            type: 1,
+            name: item.name,
+            login: {
+              username: item.login?.username || '',
+              password: item.login?.password || '',
+              uris: item.login?.uris || []
+            },
+            fields: item.fields || [],
+            notes: 'Added from chat with AI-generated data'
+          } as VaultItem))
 
-          if (Array.isArray(services)) {
-            const newItems: VaultItem[] = services
-              .filter((service: any) => 
-                service.name && typeof service.name === 'string' && 
-                !vaultItems.some(item => item.name.toLowerCase() === service.name.toLowerCase())
-              )
-              .map((service: any) => {
-                const domain = service.domain || `${service.name.toLowerCase().replace(/\s+/g, '')}.com`
-                const username = service.username || `user@${domain}`
-                const password = service.password || 'SecurePassword123!'
-                
-                return {
-                  id: crypto.randomUUID(),
-                  type: 1,
-                  name: service.name,
-                  login: {
-                    username: username,
-                    password: password,
-                    uris: [{ uri: `https://${domain}`, match: null }]
-                  },
-                  fields: [
-                    {
-                      name: 'vaultdiagram',
-                      value: JSON.stringify({
-                        id: service.name.toLowerCase().replace(/\s+/g, '-'),
-                        logoUrl: `https://logo.clearbit.com/${domain}?size=128`,
-                        recoveryMap: {},
-                        twofaMap: {}
-                      }),
-                      type: 0
-                    }
-                  ],
-                  notes: 'Added from chat with AI-generated credentials'
-                } as VaultItem
-              })
-
-            if (newItems.length > 0) {
-              setVaultItems(prev => [...prev, ...newItems])
-              return `✅ Added ${newItems.length} services to your vault: ${newItems.map(item => item.name).join(', ')}`
-            }
-          }
-        } catch (parseError) {
-          console.error('Failed to parse generated services:', parseError)
+        if (newItems.length > 0) {
+          setVaultItems(prev => [...prev, ...newItems])
+          return `✅ Added ${newItems.length} services to your vault: ${newItems.map(item => item.name).join(', ')}`
         }
       }
     } catch (error) {
       console.error('Error generating services from text:', error)
+      return `❌ Failed to parse services: ${error instanceof Error ? error.message : 'Unknown error'}`
     }
     return null
   }

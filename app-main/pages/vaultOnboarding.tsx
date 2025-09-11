@@ -34,6 +34,8 @@ export default function VaultOnboarding() {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [dynamicServices, setDynamicServices] = useState<Service[]>([])
   const [isSearchingServices, setIsSearchingServices] = useState(false)
+  const [textInput, setTextInput] = useState('')
+  const [isGeneratingFromText, setIsGeneratingFromText] = useState(false)
   
   const { setVault } = useVault()
   const { setGraph } = useGraph()
@@ -170,6 +172,78 @@ export default function VaultOnboarding() {
   const clearAllServices = () => {
     setVaultItems([])
     setSuggestedServices([])
+  }
+
+  // Generate vault items from free-form text using AI
+  const generateVaultItemsFromText = async () => {
+    if (!textInput.trim()) return
+
+    setIsGeneratingFromText(true)
+    try {
+      const response = await fetch('/api/chatgpt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [{
+            role: 'user',
+            content: `From the following text, extract the names of online services or websites the user has accounts with. Respond with ONLY a JSON array of service names, no explanation: ${textInput}`
+          }]
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.message) {
+        try {
+          const services = JSON.parse(data.message.replace(/```json\n?|\n?```/g, ''))
+
+          if (Array.isArray(services)) {
+            const newItems: VaultItem[] = services
+              .filter((name: string) => typeof name === 'string' && !isServiceAdded(name))
+              .map((name: string) => {
+                const domain = `${name.toLowerCase().replace(/\s+/g, '')}.com`
+                return {
+                  id: crypto.randomUUID(),
+                  type: 1,
+                  name,
+                  login: {
+                    username: '',
+                    password: '',
+                    uris: [{ uri: `https://${domain}`, match: null }]
+                  },
+                  fields: [
+                    {
+                      name: 'vaultdiagram',
+                      value: JSON.stringify({
+                        id: name.toLowerCase().replace(/\s+/g, '-'),
+                        logoUrl: `https://logo.clearbit.com/${domain}?size=128`,
+                        recoveryMap: {},
+                        twofaMap: {}
+                      }),
+                      type: 0
+                    }
+                  ],
+                  notes: 'Added from text input'
+                } as VaultItem
+              })
+
+            if (newItems.length > 0) {
+              const updatedItems = [...vaultItems, ...newItems]
+              setVaultItems(updatedItems)
+              getSuggestedServices(updatedItems)
+            }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse generated services:', parseError)
+        }
+      }
+    } catch (error) {
+      console.error('Error generating services from text:', error)
+    } finally {
+      setIsGeneratingFromText(false)
+    }
   }
 
   // Get AI-powered service suggestions
@@ -326,6 +400,22 @@ export default function VaultOnboarding() {
                   className="flex-1 border-0 focus:ring-0 focus:outline-none text-lg"
                 />
               </div>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4 max-w-2xl mx-auto mt-4">
+              <textarea
+                placeholder="Paste any text that mentions the services you use..."
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                rows={4}
+                className="w-full border border-gray-200 rounded-md p-2"
+              />
+              <button
+                onClick={generateVaultItemsFromText}
+                disabled={isGeneratingFromText}
+                className="mt-3 w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50"
+              >
+                {isGeneratingFromText ? 'Generating...' : 'Generate Services'}
+              </button>
             </div>
           </div>
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
+import { genericIcons, getGenericIconById, type GenericIcon } from '@/lib/genericIcons'
 
 import * as storage from '@/lib/storage'
 
@@ -40,6 +41,7 @@ export default function EditItemModal({ index, onClose }: Props) {
   const [newFieldType, setNewFieldType] = useState('0')
   const [mapTarget, setMapTarget] = useState('')
   const [twofaTarget, setTwofaTarget] = useState('')
+  const [showIconPicker, setShowIconPicker] = useState(false)
 
   const updateItemState = (partial: any) =>
     setItem((prev: any) => ({ ...prev, ...partial }))
@@ -72,6 +74,46 @@ export default function EditItemModal({ index, onClose }: Props) {
     setDiagram((d) => {
       d.recoveryNode = !d.recoveryNode
     })
+  }
+
+  const getCurrentGenericIcon = (): string | null => {
+    return diagram.genericIcon || null
+  }
+
+  const setGenericIcon = (iconId: string | null) => {
+    setDiagram((d) => {
+      if (iconId) {
+        d.genericIcon = iconId
+      } else {
+        delete d.genericIcon
+      }
+    })
+  }
+
+  const getCurrentIcon = () => {
+    const genericIconId = getCurrentGenericIcon()
+    if (genericIconId) {
+      const genericIcon = getGenericIconById(genericIconId)
+      if (genericIcon) {
+        return {
+          type: 'generic' as const,
+          icon: genericIcon,
+          url: null
+        }
+      }
+    }
+    
+    // Fallback to logo URL if no generic icon
+    const logoUrl = diagram.logoUrl
+    if (logoUrl) {
+      return {
+        type: 'logo' as const,
+        icon: null,
+        url: logoUrl
+      }
+    }
+
+    return null
   }
 
   const { setGraph } = useGraph()
@@ -228,6 +270,91 @@ export default function EditItemModal({ index, onClose }: Props) {
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
+          </div>
+          
+          {/* Icon Selection */}
+          <div>
+            <label className="block text-sm mb-2">Icon</label>
+            <div className="flex items-center gap-3">
+              {(() => {
+                const currentIcon = getCurrentIcon()
+                if (currentIcon?.type === 'generic') {
+                  return (
+                    <div 
+                      className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded border text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: currentIcon.icon.svg }}
+                    />
+                  )
+                } else if (currentIcon?.type === 'logo') {
+                  return (
+                    <img 
+                      src={currentIcon.url} 
+                      alt="Service logo" 
+                      className="w-8 h-8 rounded border"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )
+                } else {
+                  return (
+                    <div className="w-8 h-8 bg-gray-200 rounded border flex items-center justify-center text-gray-400 text-xs">
+                      ?
+                    </div>
+                  )
+                }
+              })()}
+              <button
+                type="button"
+                onClick={() => setShowIconPicker(!showIconPicker)}
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded border"
+              >
+                {showIconPicker ? 'Hide Icons' : 'Choose Icon'}
+              </button>
+              {getCurrentGenericIcon() && (
+                <button
+                  type="button"
+                  onClick={() => setGenericIcon(null)}
+                  className="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded border"
+                >
+                  Clear Icon
+                </button>
+              )}
+            </div>
+            
+            {showIconPicker && (
+              <div className="mt-3 p-3 border rounded-md bg-gray-50">
+                <div className="mb-3">
+                  <h4 className="text-sm font-medium mb-2">Generic Icons</h4>
+                  <div className="grid grid-cols-6 gap-2">
+                    {genericIcons.map((icon) => (
+                      <button
+                        key={icon.id}
+                        type="button"
+                        onClick={() => {
+                          setGenericIcon(icon.id)
+                          setShowIconPicker(false)
+                        }}
+                        className={`p-2 rounded border hover:bg-white transition-colors ${
+                          getCurrentGenericIcon() === icon.id 
+                            ? 'bg-blue-100 border-blue-300' 
+                            : 'bg-white border-gray-200'
+                        }`}
+                        title={icon.description}
+                      >
+                        <div 
+                          className="w-6 h-6 text-gray-600"
+                          dangerouslySetInnerHTML={{ __html: icon.svg }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Click an icon to select it, or use "Clear Icon" to remove selection and fall back to service logo.
+                </div>
+              </div>
+            )}
           </div>
           <div>
             <label className="flex items-center gap-2 text-sm">

@@ -4,6 +4,7 @@ import { Handle, NodeProps, Position } from 'reactflow'
 import { useHoverStore } from '@/contexts/HoverStore'
 import { useLostStore } from '@/contexts/LostStore'
 import { useLockedStore } from '@/contexts/LockedStore'
+import { getGenericIconById } from '@/lib/genericIcons'
 
 export default function VaultNode({ id, data }: NodeProps) {
   const { hoveredId, setHoveredId } = useHoverStore()
@@ -19,15 +20,30 @@ export default function VaultNode({ id, data }: NodeProps) {
       onMouseLeave={() => setHoveredId(null)}
     >
       <div className="relative">
-        <img
-          width={40}
-          height={40}
-          src={data.logoUrl}
-          alt={data.label}
-          className="rounded-lg shrink-0"
-          onError={(e) => ((e.target as HTMLImageElement).src = '/img/default.svg')}
-          loading="lazy"
-        />
+        {(() => {
+          const genericIcon = data.genericIconId ? getGenericIconById(data.genericIconId) : null
+          if (genericIcon) {
+            return (
+              <div 
+                className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg text-gray-600 shrink-0"
+                dangerouslySetInnerHTML={{ __html: genericIcon.svg }}
+                title={genericIcon.description}
+              />
+            )
+          } else {
+            return (
+              <img
+                width={40}
+                height={40}
+                src={data.logoUrl}
+                alt={data.label}
+                className="rounded-lg shrink-0"
+                onError={(e) => ((e.target as HTMLImageElement).src = '/img/default.svg')}
+                loading="lazy"
+              />
+            )
+          }
+        })()}
         {data.nestedLogoUrl && (
           <img
             width={16}

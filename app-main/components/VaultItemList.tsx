@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react'
 import { useVault } from '@/contexts/VaultStore'
 import { useHiddenStore } from '@/contexts/HiddenStore'
-
 import { useHoverStore } from '@/contexts/HoverStore'
 import { useLockedStore } from '@/contexts/LockedStore'
+import { getGenericIconById } from '@/lib/genericIcons'
+import * as storage from '@/lib/storage'
 import {
   EyeIcon,
   EyeSlashIcon,
@@ -34,7 +35,7 @@ const logoFor = (domain?: string) =>
 
 
 export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onRemoveSelected, onClearAll }: Props) {
-  const { vault } = useVault()
+  const { vault, setVault } = useVault()
   const [selected, setSelected] = useState<number[]>([])
   const [query, setQuery] = useState('')
   const [width, setWidth] = useState(320)
@@ -92,6 +93,48 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
   const toggleLock = (id: string) => {
     if (locked.includes(id)) unlock([id])
     else lock([id])
+  }
+
+  const toggleRecoveryNode = (index: number) => {
+    const item = items[index]
+    if (!item) return
+
+    // Get current vaultdiagram data
+    const vdField = item.fields?.find((f: any) => f.name === 'vaultdiagram')
+    let vd: any = {}
+    try { 
+      vd = vdField?.value ? JSON.parse(vdField.value) : {} 
+    } catch {}
+
+    // Toggle recovery node status
+    const newVd = {
+      ...vd,
+      recoveryNode: !vd.recoveryNode
+    }
+
+    // Update the item
+    const updatedItem = {
+      ...item,
+      fields: item.fields?.map((f: any) => 
+        f.name === 'vaultdiagram' 
+          ? { ...f, value: JSON.stringify(newVd) }
+          : f
+      ) || [{ name: 'vaultdiagram', value: JSON.stringify(newVd), type: 0 }]
+    }
+
+    // Update the vault
+    if (vault) {
+      const updatedVault = {
+        ...vault,
+        items: vault.items?.map((it: any, idx: number) => 
+          idx === index ? updatedItem : it
+        ) || []
+      }
+      
+      // Update vault store and save to localStorage
+      setVault(updatedVault)
+      storage.saveVault(JSON.stringify(updatedVault))
+    }
   }
 
   // sort indexes so recovery methods appear first in the list
@@ -229,6 +272,7 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
               const vdRaw = item.fields?.find((f: any) => f.name === 'vaultdiagram')?.value
               let vd: any = {}
               try { vd = vdRaw ? JSON.parse(vdRaw) : {} } catch {}
+              const genericIcon = vd.genericIcon ? getGenericIconById(vd.genericIcon) : null
               const customLogo = vd.logoUrl
               const logo = customLogo || logoFor(domain)
               const isRecovery = !!vd.recoveryNode
@@ -255,14 +299,22 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
                     />
                   </td>
                   <td className="flex items-center gap-3 py-3 px-4">
-                    <img
-                      src={logo}
-                      alt=""
-                      className="w-5 h-5"
-                      onError={e => {
-                        (e.currentTarget as HTMLImageElement).src = '/img/default.svg'
-                      }}
-                    />
+                    {genericIcon ? (
+                      <div 
+                        className="w-5 h-5 flex items-center justify-center text-gray-600"
+                        dangerouslySetInnerHTML={{ __html: genericIcon.svg }}
+                        title={genericIcon.description}
+                      />
+                    ) : (
+                      <img
+                        src={logo}
+                        alt=""
+                        className="w-5 h-5"
+                        onError={e => {
+                          (e.currentTarget as HTMLImageElement).src = '/img/default.svg'
+                        }}
+                      />
+                    )}
                     <div>
                       <div className="font-medium text-sm text-gray-800">{item.name}</div>
                       {isRecovery && (
@@ -296,6 +348,22 @@ export default function VaultItemList({ onEdit, onClose, onCreate, onRemove, onR
                       ) : (
                         <LockOpenIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                       )}
+                    </button>
+                    <button
+                      onClick={e => {
+                        e.stopPropagation()
+                        toggleRecoveryNode(index)
+                      }}
+                      className="mr-2"
+                      title={isRecovery ? "Remove recovery node" : "Mark as recovery node"}
+                    >
+                      <svg 
+                        className={`h-4 w-4 ${isRecovery ? 'text-purple-600' : 'text-gray-400 hover:text-gray-600'}`} 
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                      </svg>
                     </button>
                     {onRemove && (
                       <button

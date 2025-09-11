@@ -5,6 +5,7 @@ import { useVault } from '@/contexts/VaultStore'
 import { useGraph } from '@/contexts/GraphStore'
 import { parseVault } from '@/lib/parseVault'
 import * as storage from '@/lib/storage'
+import { MODELS, PRICE_LABELS, DEFAULT_MODEL, Model } from '@/lib/aiModels'
 
 interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -13,7 +14,6 @@ interface Message {
 
 const STORAGE_KEY = 'openai-api-key'
 const MODEL_KEY = 'openai-model'
-const MODELS = ['gpt-3.5-turbo', 'gpt-4o', 'gpt-4-turbo'] as const
 
 // -----------------------------------------------------------------------------
 // 🧭  System prompt describing mapping rules
@@ -45,17 +45,13 @@ const WELCOME_PROMPT =
 // -----------------------------------------------------------------------------
 // 🔖  Price labels + Tailwind colour classes
 // -----------------------------------------------------------------------------
-const PRICE_LABELS: Record<(typeof MODELS)[number], { label: string; color: string }> = {
-  'gpt-3.5-turbo': { label: 'costleast',  color: 'text-green-600'  },
-  'gpt-4o':        { label: 'costing',    color: 'text-yellow-600' },
-  'gpt-4-turbo':   { label: 'costiest',   color: 'text-red-600'    }, // ⇠ most expensive
-}
+// Price labels moved to lib/aiModels for central management
 
 type Props = { onClose?: () => void }
 
 export default function ChatInterface({ onClose }: Props) {
   const [apiKey, setApiKey]   = useState('')
-  const [model, setModel]     = useState<(typeof MODELS)[number]>('gpt-4o')
+  const [model, setModel]     = useState<Model>(DEFAULT_MODEL)
   const [input, setInput]     = useState('')
   const [messages, setMessages] = useState<Message[]>([
     { role: 'system', content: SYSTEM_PROMPT },
@@ -71,8 +67,8 @@ export default function ChatInterface({ onClose }: Props) {
     const storedModel = typeof localStorage !== 'undefined' ? localStorage.getItem(MODEL_KEY)   : ''
 
     if (storedKey)   setApiKey(storedKey)
-    if (storedModel && MODELS.includes(storedModel as (typeof MODELS)[number])) {
-      setModel(storedModel as (typeof MODELS)[number])
+    if (storedModel && MODELS.includes(storedModel as Model)) {
+      setModel(storedModel as Model)
     }
   }, [])
 
@@ -97,7 +93,7 @@ export default function ChatInterface({ onClose }: Props) {
       localStorage.removeItem(MODEL_KEY)
     }
     setApiKey('')
-    setModel('gpt-4o')
+    setModel(DEFAULT_MODEL)
     setMessages([
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'assistant', content: WELCOME_PROMPT },
